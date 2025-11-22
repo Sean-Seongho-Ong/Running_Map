@@ -1,0 +1,1021 @@
+openapi: 3.0.3
+info:
+  title: Running Map App API
+  version: 1.0.0
+  description: |
+    러닝 코스 자동 생성 및 추적 모바일 애플리케이션을 위한 RESTful API
+    
+    주요 기능:
+    - 거리 제약 루프 코스 자동 생성
+    - 코스 저장 및 관리
+    - 러닝 세션 추적 및 통계
+  contact:
+    name: Running Map App Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: 로컬 개발 서버
+  - url: https://api.runningmap.app/v1
+    description: 프로덕션 서버 (향후 구현)
+
+tags:
+  - name: courses
+    description: 코스 생성 및 관리 API
+  - name: running
+    description: 러닝 세션 추적 API
+
+paths:
+  /courses/generate:
+    post:
+      tags:
+        - courses
+      summary: 코스 생성
+      description: |
+        사용자 위치와 목표 거리를 기반으로 Distance-Constrained Loop Generation Algorithm을 사용하여
+        러닝 코스를 자동 생성합니다.
+        
+        알고리즘:
+        - Step 기반 원둘레 분할 + 양방향 Adaptive Step 피드백
+        - S-P 기반 Fallback
+        - 최종 Fallback (Out & Back)
+      operationId: generateCourse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseGenerationRequest'
+            examples:
+              basic:
+                summary: 기본 요청
+                value:
+                  start_point:
+                    latitude: 37.5665
+                    longitude: 126.9780
+                  target_distance: 10.0
+              with_parameters:
+                summary: 파라미터 포함 요청
+                value:
+                  start_point:
+                    latitude: 37.5665
+                    longitude: 126.9780
+                  target_distance: 5.0
+                  parameters:
+                    step_init: 0.8
+                    tolerance_ratio: 0.15
+                    max_iter: 7
+      responses:
+        '200':
+          description: 코스 생성 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseGenerationResponse'
+              examples:
+                success:
+                  summary: 성공 응답
+                  value:
+                    status: OK
+                    course:
+                      id: "550e8400-e29b-41d4-a716-446655440000"
+                      polyline:
+                        - latitude: 37.5665
+                          longitude: 126.9780
+                        - latitude: 37.5670
+                          longitude: 126.9785
+                      distance: 10.2
+                      relative_error: 0.02
+                      algorithm: STEP_ADAPTIVE
+                      iterations: 3
+                      step_used: 0.9
+                      metadata:
+                        estimated_time: 60
+                        elevation_gain: 150
+        '400':
+          description: 잘못된 요청 (입력값 검증 실패)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: 코스 생성 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseGenerationErrorResponse'
+
+  /courses:
+    post:
+      tags:
+        - courses
+      summary: 코스 저장
+      description: 생성된 코스를 서버에 저장합니다.
+      operationId: createCourse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+      responses:
+        '201':
+          description: 코스 저장 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseCreateResponse'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 인증 실패 (향후 구현)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - courses
+      summary: 코스 목록 조회
+      description: 저장된 코스 목록을 조회합니다. 사용자별, 공개 여부별로 필터링 가능합니다.
+      operationId: listCourses
+      parameters:
+        - name: user_id
+          in: query
+          description: 사용자 ID (선택사항, 향후 구현)
+          schema:
+            type: string
+            format: uuid
+        - name: public
+          in: query
+          description: 공개 코스만 조회
+          schema:
+            type: boolean
+            default: false
+        - name: limit
+          in: query
+          description: 페이지당 항목 수
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: 페이지 오프셋
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: 코스 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseListResponse'
+
+  /courses/{course_id}:
+    get:
+      tags:
+        - courses
+      summary: 코스 상세 조회
+      description: 특정 코스의 상세 정보를 조회합니다.
+      operationId: getCourse
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          description: 코스 ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 코스 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetailResponse'
+        '404':
+          description: 코스를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - courses
+      summary: 코스 삭제
+      description: 저장된 코스를 삭제합니다.
+      operationId: deleteCourse
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          description: 코스 ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: 코스 삭제 성공
+        '404':
+          description: 코스를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 인증 실패 또는 권한 없음 (향후 구현)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /running/start:
+    post:
+      tags:
+        - running
+      summary: 러닝 세션 시작
+      description: 새로운 러닝 세션을 시작합니다. 선택적으로 기존 코스를 사용할 수 있습니다.
+      operationId: startRunningSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunningStartRequest'
+      responses:
+        '201':
+          description: 러닝 세션 시작 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunningStartResponse'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /running/{session_id}:
+    put:
+      tags:
+        - running
+      summary: 러닝 세션 업데이트
+      description: 러닝 세션의 현재 상태를 업데이트합니다.
+      operationId: updateRunningSession
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          description: 러닝 세션 ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunningUpdateRequest'
+      responses:
+        '200':
+          description: 러닝 세션 업데이트 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunningUpdateResponse'
+        '404':
+          description: 러닝 세션을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /running/{session_id}/location:
+    post:
+      tags:
+        - running
+      summary: 위치 업데이트
+      description: 러닝 중 현재 위치를 업데이트하고 통계를 계산합니다.
+      operationId: updateLocation
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          description: 러닝 세션 ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationUpdateRequest'
+      responses:
+        '200':
+          description: 위치 업데이트 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationUpdateResponse'
+        '404':
+          description: 러닝 세션을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /running/{session_id}/finish:
+    post:
+      tags:
+        - running
+      summary: 러닝 세션 종료
+      description: 러닝 세션을 종료하고 최종 통계를 반환합니다.
+      operationId: finishRunningSession
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          description: 러닝 세션 ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunningFinishRequest'
+      responses:
+        '200':
+          description: 러닝 세션 종료 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunningFinishResponse'
+        '404':
+          description: 러닝 세션을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Coordinate:
+      type: object
+      description: WGS84 좌표계의 위도/경도 좌표
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: double
+          description: 위도 (WGS84)
+          minimum: -90
+          maximum: 90
+          example: 37.5665
+        longitude:
+          type: number
+          format: double
+          description: 경도 (WGS84)
+          minimum: -180
+          maximum: 180
+          example: 126.9780
+
+    Polyline:
+      type: array
+      description: 좌표 배열 (폴리라인)
+      items:
+        $ref: '#/components/schemas/Coordinate'
+      minItems: 2
+      example:
+        - latitude: 37.5665
+          longitude: 126.9780
+        - latitude: 37.5670
+          longitude: 126.9785
+
+    Location:
+      type: object
+      description: 위치 정보 (좌표 + 고도 + 타임스탬프)
+      required:
+        - latitude
+        - longitude
+        - timestamp
+      properties:
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+        altitude:
+          type: number
+          format: double
+          description: 고도 (미터, 선택사항)
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          description: 위치 수집 시각 (ISO 8601)
+
+    CourseGenerationParameters:
+      type: object
+      description: 코스 생성 알고리즘 파라미터
+      properties:
+        step_init:
+          type: number
+          format: double
+          description: 초기 스텝 길이 (km)
+          minimum: 0.1
+          maximum: 5.0
+          default: 1.0
+        step_min:
+          type: number
+          format: double
+          description: 최소 스텝 길이 (km)
+          minimum: 0.1
+          maximum: 2.0
+          default: 0.4
+        step_max:
+          type: number
+          format: double
+          description: 최대 스텝 길이 (km)
+          minimum: 0.5
+          maximum: 5.0
+          default: 2.0
+        tolerance_ratio:
+          type: number
+          format: double
+          description: 허용 오차 비율 (0.0 ~ 1.0)
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.1
+        shrink_factor:
+          type: number
+          format: double
+          description: Step 축소 계수
+          minimum: 0.1
+          maximum: 1.0
+          default: 0.8
+        grow_factor:
+          type: number
+          format: double
+          description: Step 확대 계수
+          minimum: 1.0
+          maximum: 3.0
+          default: 1.2
+        max_iter:
+          type: integer
+          description: 최대 반복 횟수
+          minimum: 1
+          maximum: 20
+          default: 5
+        use_SP_fallback:
+          type: boolean
+          description: S-P 기반 Fallback 사용 여부
+          default: true
+
+    CourseGenerationRequest:
+      type: object
+      required:
+        - start_point
+        - target_distance
+      properties:
+        start_point:
+          $ref: '#/components/schemas/Coordinate'
+        target_distance:
+          type: number
+          format: double
+          description: 목표 거리 (km)
+          minimum: 0.5
+          maximum: 50.0
+          example: 10.0
+        parameters:
+          $ref: '#/components/schemas/CourseGenerationParameters'
+
+    CourseMetadata:
+      type: object
+      description: 코스 메타데이터
+      properties:
+        estimated_time:
+          type: integer
+          description: 예상 소요 시간 (분)
+          minimum: 0
+        elevation_gain:
+          type: number
+          format: double
+          description: 누적 상승 고도 (m)
+          minimum: 0
+        elevation_loss:
+          type: number
+          format: double
+          description: 누적 하강 고도 (m)
+          minimum: 0
+        quality_score:
+          type: number
+          format: double
+          description: 코스 품질 점수 (0.0 ~ 1.0, 선택사항)
+          minimum: 0.0
+          maximum: 1.0
+        self_intersections:
+          type: integer
+          description: 자기 교차 횟수 (선택사항)
+          minimum: 0
+        tags:
+          type: array
+          description: 코스 태그
+          items:
+            type: string
+        difficulty:
+          type: string
+          description: 난이도
+          enum:
+            - easy
+            - medium
+            - hard
+          nullable: true
+
+    CourseGenerationResult:
+      type: object
+      description: 생성된 코스 데이터
+      required:
+        - id
+        - polyline
+        - distance
+        - relative_error
+        - algorithm
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 임시 코스 ID (저장 전)
+        polyline:
+          $ref: '#/components/schemas/Polyline'
+        distance:
+          type: number
+          format: double
+          description: 실제 코스 거리 (km)
+        relative_error:
+          type: number
+          format: double
+          description: 상대 오차 (|L - D| / D)
+        algorithm:
+          type: string
+          description: 사용된 알고리즘
+          enum:
+            - STEP_ADAPTIVE
+            - SP_BASED
+            - FALLBACK
+        iterations:
+          type: integer
+          description: 반복 횟수
+          minimum: 0
+        step_used:
+          type: number
+          format: double
+          description: 사용된 step 값 (km)
+          nullable: true
+        metadata:
+          $ref: '#/components/schemas/CourseMetadata'
+
+    CourseGenerationResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: 생성 상태
+          enum:
+            - OK
+            - BEST_EFFORT
+            - FAIL
+        course:
+          $ref: '#/components/schemas/CourseGenerationResult'
+          nullable: true
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+          nullable: true
+
+    CourseGenerationErrorResponse:
+      type: object
+      required:
+        - status
+        - error
+      properties:
+        status:
+          type: string
+          enum:
+            - FAIL
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - COURSE_GENERATION_FAILED
+                - ROUTING_SERVICE_ERROR
+                - VALIDATION_ERROR
+            message:
+              type: string
+            details:
+              type: object
+              properties:
+                algorithm:
+                  type: string
+                best_relative_error:
+                  type: number
+                  format: double
+
+    CourseCreateRequest:
+      type: object
+      required:
+        - name
+        - polyline
+        - distance
+      properties:
+        name:
+          type: string
+          description: 코스 이름
+          minLength: 1
+          maxLength: 100
+          example: "한강 러닝 코스"
+        polyline:
+          $ref: '#/components/schemas/Polyline'
+        distance:
+          type: number
+          format: double
+          description: 코스 거리 (km)
+          minimum: 0.1
+        is_public:
+          type: boolean
+          description: 공개 여부
+          default: false
+        metadata:
+          $ref: '#/components/schemas/CourseMetadata'
+
+    CourseCreateResponse:
+      type: object
+      required:
+        - id
+        - name
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CourseListItem:
+      type: object
+      required:
+        - id
+        - name
+        - distance
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        distance:
+          type: number
+          format: double
+        created_at:
+          type: string
+          format: date-time
+        is_public:
+          type: boolean
+        user_name:
+          type: string
+          nullable: true
+          description: 사용자 이름 (향후 구현)
+
+    CourseListResponse:
+      type: object
+      required:
+        - courses
+        - total
+        - limit
+        - offset
+      properties:
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseListItem'
+        total:
+          type: integer
+          description: 전체 코스 수
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+        offset:
+          type: integer
+          minimum: 0
+
+    CourseDetailResponse:
+      type: object
+      required:
+        - id
+        - name
+        - distance
+        - polyline
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        distance:
+          type: number
+          format: double
+        polyline:
+          $ref: '#/components/schemas/Polyline'
+        metadata:
+          $ref: '#/components/schemas/CourseMetadata'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        user_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: 사용자 ID (향후 구현)
+
+    RunningStartRequest:
+      type: object
+      required:
+        - start_location
+      properties:
+        course_id:
+          type: string
+          format: uuid
+          description: 사용할 코스 ID (선택사항)
+          nullable: true
+        start_location:
+          $ref: '#/components/schemas/Coordinate'
+
+    RunningStartResponse:
+      type: object
+      required:
+        - session_id
+        - started_at
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        started_at:
+          type: string
+          format: date-time
+
+    RunningStats:
+      type: object
+      description: 러닝 통계 정보
+      properties:
+        distance:
+          type: number
+          format: double
+          description: 누적 거리 (km)
+          minimum: 0
+        duration:
+          type: integer
+          description: 경과 시간 (초)
+          minimum: 0
+        pace:
+          type: number
+          format: double
+          description: 평균 페이스 (분/km)
+          minimum: 0
+        speed:
+          type: number
+          format: double
+          description: 평균 속도 (km/h)
+          minimum: 0
+        elevation_gain:
+          type: number
+          format: double
+          description: 누적 상승 고도 (m)
+          minimum: 0
+        elevation_loss:
+          type: number
+          format: double
+          description: 누적 하강 고도 (m)
+          minimum: 0
+        current_altitude:
+          type: number
+          format: double
+          description: 현재 고도 (m)
+          nullable: true
+
+    RunningUpdateRequest:
+      type: object
+      properties:
+        current_location:
+          $ref: '#/components/schemas/Coordinate'
+        stats:
+          $ref: '#/components/schemas/RunningStats'
+
+    RunningUpdateResponse:
+      type: object
+      required:
+        - session_id
+        - current_stats
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        current_stats:
+          $ref: '#/components/schemas/RunningStats'
+
+    LocationUpdateRequest:
+      type: object
+      required:
+        - location
+      properties:
+        location:
+          $ref: '#/components/schemas/Location'
+
+    LocationUpdateResponse:
+      type: object
+      required:
+        - session_id
+        - current_stats
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        current_stats:
+          $ref: '#/components/schemas/RunningStats'
+
+    RunningSegment:
+      type: object
+      description: 구간별 통계
+      properties:
+        index:
+          type: integer
+          description: 구간 번호 (1km 단위)
+          minimum: 1
+        distance:
+          type: number
+          format: double
+          description: 구간 거리 (km)
+          minimum: 0
+        duration:
+          type: integer
+          description: 구간 시간 (초)
+          minimum: 0
+        pace:
+          type: number
+          format: double
+          description: 구간 페이스 (분/km)
+          minimum: 0
+
+    RunningSummary:
+      type: object
+      description: 러닝 세션 최종 통계
+      required:
+        - total_distance
+        - total_duration
+        - avg_pace
+      properties:
+        total_distance:
+          type: number
+          format: double
+          description: 총 거리 (km)
+          minimum: 0
+        total_duration:
+          type: integer
+          description: 총 시간 (초)
+          minimum: 0
+        avg_pace:
+          type: number
+          format: double
+          description: 평균 페이스 (분/km)
+          minimum: 0
+        avg_speed:
+          type: number
+          format: double
+          description: 평균 속도 (km/h)
+          minimum: 0
+        elevation_gain:
+          type: number
+          format: double
+          description: 누적 상승 고도 (m)
+          minimum: 0
+        elevation_loss:
+          type: number
+          format: double
+          description: 누적 하강 고도 (m)
+          minimum: 0
+        segments:
+          type: array
+          description: 구간별 통계 (1km 단위)
+          items:
+            $ref: '#/components/schemas/RunningSegment'
+
+    RunningFinishRequest:
+      type: object
+      required:
+        - end_location
+        - route
+      properties:
+        end_location:
+          $ref: '#/components/schemas/Coordinate'
+        route:
+          type: array
+          description: 전체 러닝 경로
+          items:
+            $ref: '#/components/schemas/Location'
+          minItems: 1
+
+    RunningFinishResponse:
+      type: object
+      required:
+        - session_id
+        - summary
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        summary:
+          $ref: '#/components/schemas/RunningSummary'
+        finished_at:
+          type: string
+          format: date-time
+
+    ErrorDetail:
+      type: object
+      description: 에러 상세 정보
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: 에러 코드
+          enum:
+            - VALIDATION_ERROR
+            - COURSE_GENERATION_FAILED
+            - ROUTING_SERVICE_ERROR
+            - DATABASE_ERROR
+            - NOT_FOUND
+            - UNAUTHORIZED
+            - INTERNAL_SERVER_ERROR
+        message:
+          type: string
+          description: 사용자 친화적 에러 메시지
+        details:
+          type: object
+          description: 추가 에러 정보
+          additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer Token 인증 (향후 구현)
+
+security:
+  - BearerAuth: []
+

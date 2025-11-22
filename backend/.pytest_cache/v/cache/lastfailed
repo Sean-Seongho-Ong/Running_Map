@@ -1,0 +1,15 @@
+{
+  "tests/infrastructure/integration/test_database_integration.py::TestDatabaseConnection::test_tables_exist": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestCourseRepositoryIntegration::test_create_course": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestCourseRepositoryIntegration::test_get_course_by_id": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestCourseRepositoryIntegration::test_list_courses": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestCourseRepositoryIntegration::test_update_course": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestCourseRepositoryIntegration::test_delete_course": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestRunningSessionRepositoryIntegration::test_create_running_session": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestRunningSessionRepositoryIntegration::test_get_running_session_by_id": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestRunningSessionRepositoryIntegration::test_update_running_session": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestPostGISIntegration::test_linestring_storage": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestPostGISIntegration::test_spatial_index": true,
+  "tests/infrastructure/database/test_repositories.py": true,
+  "tests/infrastructure/integration/test_database_integration.py::TestDatabaseConnection::test_postgis_extension": true
+}
