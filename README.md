@@ -92,8 +92,8 @@ Running_map/
 ### 1. 저장소 클론
 
 ```bash
-git clone <repository-url>
-cd Running_map
+git clone https://github.com/Sean-Seongho-Ong/Running_Map.git
+cd Running_Map
 ```
 
 ### 2. 환경 변수 설정
@@ -406,5 +406,3 @@ npm test
 - [기술 스택 결정](plan/SRS_Technology_Decisions.md)
 - [코스 생성 알고리즘](plan/distance_constrained_loop_v1_0.md)
 - [프론트엔드 아키텍처](plan/Frontend_Architecture_Design.md)
-
-
