@@ -581,7 +581,22 @@ adb reverse --list
   - ✅ 코스 재생성 기능
   - ✅ UX 개선 (네비게이션 흐름 수정)
 - ✅ TypeScript 오류 수정 완료
-- ✅ Android 빌드 성공 (compileSdkVersion 34)
+- ✅ Android 빌드 성공
+  - ✅ 빌드 환경 설정 완료
+    - Java 17 설정 (gradle.properties: `org.gradle.java.home=C:\\Users\\User\\.jdks\\temurin-17.0.17`)
+    - Gradle 7.5.1 유지 (Java 17 호환)
+    - compileSdkVersion 33 유지
+  - ✅ 의존성 버전 호환성 조정 완료
+    - androidx.appcompat: 1.7.0 → 1.6.1 (compileSdk 33 호환)
+    - androidx.core: 1.16.0 → 1.10.1 (compileSdk 33 호환)
+    - androidx.annotation-experimental: 1.4.1 → 1.3.1 (compileSdk 33 호환)
+    - build.gradle에 resolutionStrategy 추가
+  - ✅ react-native-gesture-handler 버전 조정 완료 (2.29.1 → 2.12.0)
+  - ✅ NullPointerException 해결 완료
+    - build.gradle의 packagingOptions 루프 null 체크 강화
+    - entryFile 설정 null 체크 강화
+  - ✅ Gradle 빌드 성공 (assembleDebug 완료, APK 생성 성공)
+- ⚠️ 다음 단계: 에뮬레이터에 앱 설치 및 실행
 - ✅ **Figma 화면 구성 디자인 완료** (채널: ra1r3dhi)
   - ✅ MapScreen (지도 메인 화면)
   - ✅ CourseGenerationScreen (코스 생성 화면)
@@ -596,13 +611,11 @@ adb reverse --list
   - ✅ CourseListScreen 스타일 수정 (Search Container 높이, 카드 크기)
   - ✅ RunningScreen 스타일 수정 (Stats Container, Control Container 패딩)
 
-### 현재 문제 ⚠️
-- ⚠️ **앱 로드 실패**: Android Studio에서 빌드는 성공했지만 앱이 JavaScript 번들을 로드하지 못함
-  - Metro Bundler는 정상 실행 중
-  - WebSocket 연결 오류 발생
-  - Expo Dev Client에서 서버 선택 후 로드되지 않음
-
-**해결 방법**: `mobile/METRO_BUNDLER_SETUP.md` 및 `mobile/ANDROID_EMULATOR_GUIDE.md` 참고
+### 다음 단계
+- ⚠️ **에뮬레이터에 앱 설치 및 실행**: Android Studio에서 빌드는 성공했고 APK가 생성됨
+  - APK 위치: `mobile/android/app/build/outputs/apk/debug/`
+  - Android Studio에서 에뮬레이터 실행 후 앱 설치 필요
+  - 또는 `adb install` 명령으로 직접 설치 가능
 
 ## 개발 전략: Android Studio vs Expo Go
 
@@ -610,7 +623,7 @@ adb reverse --list
 
 **이유:**
 1. **네이티브 모듈 필수**: `react-native-maps`, `@react-native-community/geolocation` 사용 중
-2. **빌드 성공**: Android Studio 빌드는 이미 성공했으므로 연결 문제만 해결하면 됨
+2. **빌드 성공**: Android Studio 빌드 완료, APK 생성 성공
 3. **코드 변경 최소화**: 현재 구현된 코드를 그대로 사용 가능
 4. **프로덕션 준비**: 실제 배포 환경과 동일한 구조
 

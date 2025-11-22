@@ -26,7 +26,21 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
   - 🚧 RunningScreen 연동 (기본 구조만, GPS 추적 미구현)
 - ✅ **기본 구조**: 완료 (Theme, 컴포넌트, 네비게이션, 화면 레이아웃)
 - ✅ **TypeScript 오류**: 수정 완료 (CourseDetailInfo, MapView, Card, Theme)
-- ✅ **Android 빌드**: 성공 (compileSdkVersion 34로 업데이트)
+- ✅ **Android 빌드**: 성공
+  - ✅ 빌드 환경 설정 완료
+    - Java 17 설정 (gradle.properties: `org.gradle.java.home=C:\\Users\\User\\.jdks\\temurin-17.0.17`)
+    - Gradle 7.5.1 유지 (Java 17 호환)
+    - compileSdkVersion 33 유지
+  - ✅ 의존성 버전 호환성 조정 완료
+    - androidx.appcompat: 1.7.0 → 1.6.1 (compileSdk 33 호환)
+    - androidx.core: 1.16.0 → 1.10.1 (compileSdk 33 호환)
+    - androidx.annotation-experimental: 1.4.1 → 1.3.1 (compileSdk 33 호환)
+    - build.gradle에 resolutionStrategy 추가
+  - ✅ react-native-gesture-handler 버전 조정 완료 (2.29.1 → 2.12.0)
+  - ✅ NullPointerException 해결 완료
+    - build.gradle의 packagingOptions 루프 null 체크 강화
+    - entryFile 설정 null 체크 강화
+  - ✅ Gradle 빌드 성공 (assembleDebug 완료, APK 생성 성공)
 - ✅ **Figma 화면 구성**: 완료 (4개 주요 화면 레이아웃 디자인 완료)
   - ✅ MapScreen (지도 메인 화면)
   - ✅ CourseGenerationScreen (코스 생성 화면)
@@ -37,9 +51,35 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
   - ✅ Button 컴포넌트 스타일 수정 (outline variant, 버튼 높이)
   - ✅ Card 컴포넌트 스타일 수정 (모서리 8px, 테두리)
   - ✅ 모든 화면 스타일 Figma 디자인에 맞게 조정
-- ⚠️ **앱 로드**: Metro Bundler 연결 문제로 인해 앱이 JavaScript 번들을 로드하지 못함
+- ⚠️ **앱 실행**: 에뮬레이터에 앱 설치 및 실행 필요 (다음 단계)
 
 ### 최근 완료 작업 (2025-11-22)
+
+#### Android 빌드 환경 설정 및 빌드 성공 (2025-11-22)
+- ✅ **Java 17 설정 완료**
+  - gradle.properties에 Java 17 경로 설정 (`C:\Users\User\.jdks\temurin-17.0.17`)
+  - Gradle 7.5.1과 Java 17 호환성 확보
+- ✅ **의존성 버전 호환성 조정 완료**
+  - compileSdkVersion 33 유지
+  - androidx 의존성 버전 강제 설정 (build.gradle의 resolutionStrategy)
+    - androidx.appcompat: 1.7.0 → 1.6.1
+    - androidx.core: 1.16.0 → 1.10.1
+    - androidx.annotation-experimental: 1.4.1 → 1.3.1
+  - AAR metadata 체크 실패 문제 해결
+- ✅ **react-native-gesture-handler 버전 조정 완료**
+  - 2.29.1 → 2.12.0 (React Native 0.72.6 호환)
+  - 컴파일 에러 해결 (ViewManagerWithGeneratedInterface 문제 해결)
+- ✅ **NullPointerException 해결 완료**
+  - build.gradle의 packagingOptions 루프 null 체크 강화
+  - entryFile 설정 null 체크 강화
+  - 안전한 문자열 처리 로직 추가
+- ✅ **Gradle 빌드 성공**
+  - `gradlew assembleDebug` 성공
+  - APK 파일 생성 완료 (`mobile/android/app/build/outputs/apk/debug/`)
+  - 모든 컴파일 에러 해결
+- ⚠️ **다음 단계**: 에뮬레이터에 앱 설치 및 실행
+
+### 최근 완료 작업 (이전)
 - ✅ **Figma 디자인 코드 적용 완료**: 4개 주요 화면의 레이아웃, 색상, 크기를 코드에 반영
   - MapScreen: Map Area 여백, Button Container 스타일, 버튼 크기 조정
   - CourseGenerationScreen: Input Container 배경색, Preset 버튼 크기 조정
@@ -294,9 +334,27 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
     - [ ] Windows 환경에서도 동작하도록 세션 관리 로직 개선
   - **참고**: 단위 테스트는 모두 통과했으며, 핵심 로직은 검증 완료
 
-#### 프론트엔드 앱 로드 문제 (2025-11-22)
-- [ ] Metro Bundler 연결 문제 해결
-  - **문제**: Android Studio에서 빌드는 성공했지만 앱이 JavaScript 번들을 로드하지 못함
+#### Android 빌드 환경 설정 (2025-11-22) ✅ 완료
+- [x] Java 17 설정
+  - **문제**: Java 21 사용 시 Gradle 7.5.1과 호환성 문제 (`Unsupported class file major version 65`)
+  - **해결**: Java 17 설치 및 gradle.properties에 경로 설정
+  - **결과**: Gradle 빌드 정상 작동
+- [x] 의존성 버전 호환성 조정
+  - **문제**: androidx 의존성이 compileSdkVersion 34/35를 요구하지만 프로젝트는 33 사용
+  - **해결**: build.gradle에 resolutionStrategy 추가하여 호환 버전으로 강제 설정
+  - **결과**: AAR metadata 체크 통과
+- [x] react-native-gesture-handler 버전 조정
+  - **문제**: 2.29.1 버전이 React Native 0.72.6과 호환되지 않음 (ViewManagerWithGeneratedInterface 에러)
+  - **해결**: 2.12.0으로 다운그레이드
+  - **결과**: 컴파일 에러 해결
+- [x] NullPointerException 해결
+  - **문제**: `Cannot invoke "String.length()" because "<parameter1>" is null`
+  - **해결**: build.gradle의 packagingOptions와 entryFile 설정에 null 체크 강화
+  - **결과**: 빌드 성공
+
+#### 프론트엔드 앱 실행 (다음 단계)
+- [ ] 에뮬레이터에 앱 설치 및 실행
+  - **현재 상태**: Android Studio에서 빌드는 성공했고 APK가 생성됨
   - **증상**: 
     - 앱이 Expo Dev Client 화면에서 멈춤
     - Metro Bundler는 정상 실행 중이지만 번들 요청이 없음
@@ -356,7 +414,13 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
 - [x] TypeScript 설정
 - [x] ESLint/Prettier 설정
 - [x] 환경 변수 설정
-- [x] Android 빌드 설정 (compileSdkVersion 34)
+- [x] Android 빌드 설정
+  - [x] compileSdkVersion 33 설정
+  - [x] Java 17 설정 (gradle.properties)
+  - [x] 의존성 버전 호환성 조정
+  - [x] react-native-gesture-handler 버전 조정 (2.12.0)
+  - [x] NullPointerException 해결
+  - [x] Gradle 빌드 성공
 - [x] Metro config.js 설정
 - [x] TypeScript 오류 수정
 

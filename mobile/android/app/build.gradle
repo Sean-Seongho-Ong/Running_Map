@@ -8,7 +8,25 @@ def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
  * By default you don't need to apply any configuration, just uncomment the lines you need.
  */
 react {
-    entryFile = file(["node", "-e", "require('expo/scripts/resolveAppEntry')", projectRoot, "android", "absolute"].execute(null, rootDir).text.trim())
+    // Resolve entry file - use package.json main field directly
+    // This avoids issues with expo/scripts/resolveAppEntry.js requiring specific working directory
+    def packageJsonFile = new File(projectRoot, "package.json")
+    if (!packageJsonFile.exists()) {
+        throw new GradleException("package.json not found at ${projectRoot}")
+    }
+    def packageJson = new groovy.json.JsonSlurper().parse(packageJsonFile)
+    def mainEntry = packageJson.main
+    if (mainEntry == null || mainEntry.toString().trim().isEmpty()) {
+        mainEntry = "index.js"
+    }
+    mainEntry = mainEntry.toString().trim()
+    def entryFilePath = new File(projectRoot, mainEntry).absolutePath
+    def entryFileObj = new File(entryFilePath)
+    if (!entryFileObj.exists()) {
+        throw new GradleException("Entry file not found: ${entryFilePath}")
+    }
+    entryFile = file(entryFilePath)
+    
     reactNativeDir = new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsoluteFile()
     hermesCommand = new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsolutePath() + "/sdks/hermesc/%OS-BIN%/hermesc"
     codegenDir = new File(["node", "--print", "require.resolve('@react-native/codegen/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsoluteFile()
@@ -89,6 +107,8 @@ android {
         versionCode 1
         versionName "1.0.0"
 
+        multiDexEnabled true
+
         buildConfigField("boolean", "REACT_NATIVE_UNSTABLE_USE_RUNTIME_SCHEDULER_ALWAYS", (findProperty("reactNative.unstable_useRuntimeSchedulerAlways") ?: true).toString())
     }
     signingConfigs {
@@ -112,6 +132,12 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+    
+    // Fix for DEX merging NullPointerException
+    packagingOptions {
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libjsc.so'
+    }
 }
 
 // Apply static values from `gradle.properties` to the `android.packagingOptions`
@@ -119,17 +145,40 @@ android {
 // android.packagingOptions.pickFirsts=/LICENSE,**/picasa.ini
 ["pickFirsts", "excludes", "merges", "doNotStrip"].each { prop ->
     // Split option: 'foo,bar' -> ['foo', 'bar']
-    def options = (findProperty("android.packagingOptions.$prop") ?: "").split(",");
-    // Trim all elements in place.
-    for (i in 0..<options.size()) options[i] = options[i].trim();
-    // `[] - ""` is essentially `[""].filter(Boolean)` removing all empty strings.
-    options -= ""
+    def propValue = findProperty("android.packagingOptions.$prop")
+    if (propValue == null || propValue.toString().trim().isEmpty()) {
+        return // Skip this property if it's null or empty
+    }
+    
+    def propValueStr = propValue.toString()
+    if (propValueStr == null || propValueStr.isEmpty()) {
+        return // Skip if string is null or empty
+    }
+    
+    def options = propValueStr.split(",")
+    if (options == null || options.length == 0) {
+        return // Skip if split result is null or empty
+    }
+    
+    // Trim all elements and filter out null/empty strings
+    def validOptions = []
+    for (i in 0..<options.length) {
+        def option = options[i]
+        if (option != null) {
+            def trimmed = option.trim()
+            if (trimmed != null && !trimmed.isEmpty()) {
+                validOptions.add(trimmed)
+            }
+        }
+    }
 
-    if (options.length > 0) {
-        println "android.packagingOptions.$prop += $options ($options.length)"
+    if (validOptions.size() > 0) {
+        println "android.packagingOptions.$prop += $validOptions (${validOptions.size()})"
         // Ex: android.packagingOptions.pickFirsts += '**/SCCS/**'
-        options.each {
-            android.packagingOptions[prop] += it
+        validOptions.each { option ->
+            if (option != null && !option.isEmpty()) {
+                android.packagingOptions[prop] += option
+            }
         }
     }
 }
@@ -137,6 +186,9 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    
+    // MultiDex support
+    implementation("androidx.multidex:multidex:2.0.1")
 
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";

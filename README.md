@@ -299,6 +299,12 @@ pytest --cov=backend --cov-report=html
 - ✅ Figma 디자인 코드 적용 완료 (모든 화면의 레이아웃, 색상, 크기 반영)
 - ✅ Figma 화면 구성 디자인 완료 (4개 주요 화면)
 - ✅ 프론트엔드 API 코드 검토 및 수정 완료 (RunningRepository, 타입 정의)
+- ✅ Android 빌드 환경 설정 완료
+  - Java 17 설정 (gradle.properties)
+  - 의존성 버전 호환성 조정 (compileSdkVersion 33 호환)
+  - react-native-gesture-handler 버전 조정 (2.12.0)
+  - NullPointerException 해결 (build.gradle null 체크 강화)
+- ✅ Android 빌드 성공 (Gradle 빌드 완료, APK 생성 성공)
 
 ### 프론트엔드 테스트
 
@@ -393,8 +399,13 @@ npm test
   - Theme 색상 추가 (surfaceLight, mapBackground, borderGray)
   - Button, Card 컴포넌트 스타일 수정
 - ✅ TypeScript 오류 수정 완료
-- ✅ Android 빌드 성공 (compileSdkVersion 34)
-- ⚠️ 앱 로드 문제: Metro Bundler 연결 문제로 인해 앱이 JavaScript 번들을 로드하지 못함
+- ✅ Android 빌드 성공
+  - ✅ 빌드 환경 설정 완료 (Java 17, Gradle 7.5.1, compileSdkVersion 33)
+  - ✅ 의존성 버전 호환성 조정 완료
+  - ✅ react-native-gesture-handler 버전 조정 완료 (2.12.0)
+  - ✅ NullPointerException 해결 완료
+  - ✅ Gradle 빌드 성공 (APK 생성 완료)
+- ⚠️ 앱 실행: 에뮬레이터에 앱 설치 및 실행 필요 (다음 단계)
 
 ### 진행 중 🚧
 
