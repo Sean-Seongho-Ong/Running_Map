@@ -84,7 +84,7 @@ const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.background,
     },
     statsContainer: {
-      padding: theme.spacing.md,
+      padding: theme.spacing.md, // Figma 디자인: 16px 패딩
       backgroundColor: theme.colors.surface,
     },
     map: {
@@ -92,9 +92,9 @@ const createStyles = (theme: Theme) =>
     },
     controlContainer: {
       flexDirection: 'row',
-      padding: theme.spacing.md,
+      padding: theme.spacing.md, // Figma 디자인: 16px 패딩
       backgroundColor: theme.colors.surface,
-      gap: theme.spacing.sm,
+      gap: theme.spacing.sm, // 버튼 간격
     },
     controlButton: {
       flex: 1,

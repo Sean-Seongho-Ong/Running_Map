@@ -1,5 +1,8 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import { config } from '../../config';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('API Client');
 
 const apiClient: AxiosInstance = axios.create({
     baseURL: config.API_BASE_URL,
@@ -12,11 +15,11 @@ const apiClient: AxiosInstance = axios.create({
 // Request Interceptor
 apiClient.interceptors.request.use(
     (config) => {
-        console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
+        logger.info(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
     },
     (error) => {
-        console.error('[API Request Error]', error);
+        logger.error('API Request Error', error);
         return Promise.reject(error);
     }
 );
@@ -24,19 +27,20 @@ apiClient.interceptors.request.use(
 // Response Interceptor
 apiClient.interceptors.response.use(
     (response: AxiosResponse) => {
-        console.log(`[API Response] ${response.status} ${response.config.url}`);
+        logger.info(`API Response: ${response.status} ${response.config.url}`);
         return response;
     },
     (error: AxiosError) => {
         if (error.response) {
-            console.error(
-                `[API Error] ${error.response.status} ${error.config?.url}`,
-                error.response.data
+            // 민감 정보는 로그에 기록하지 않음 (규칙 10)
+            logger.error(
+                `API Error: ${error.response.status} ${error.config?.url}`,
+                { status: error.response.status, url: error.config?.url }
             );
         } else if (error.request) {
-            console.error('[API Error] No response received', error.request);
+            logger.error('API Error: No response received', { request: 'Network error' });
         } else {
-            console.error('[API Error] Request setup failed', error.message);
+            logger.error('API Error: Request setup failed', { message: error.message });
         }
         return Promise.reject(error);
     }

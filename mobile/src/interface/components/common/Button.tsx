@@ -54,13 +54,15 @@ const createStyles = (
   size: string,
   fullWidth: boolean
 ) => {
-  const height = size === 'small' ? 36 : size === 'medium' ? 44 : 52;
+  // Figma 디자인에 맞게 높이 조정: small 40px, medium 48px
+  const height = size === 'small' ? 40 : size === 'medium' ? 48 : 52;
   const paddingHorizontal = size === 'small' ? 16 : size === 'medium' ? 24 : 32;
   const fontSize = size === 'small' ? 14 : size === 'medium' ? 16 : 18;
   
   const getBackgroundColor = () => {
     if (variant === 'primary') return theme.colors.primary;
     if (variant === 'secondary') return theme.colors.secondary;
+    if (variant === 'outline') return theme.colors.surface; // outline 버튼은 흰색 배경
     return 'transparent';
   };
   
@@ -68,11 +70,12 @@ const createStyles = (
     if (variant === 'primary' || variant === 'secondary') {
       return theme.colors.textInverse;
     }
-    return theme.colors.primary;
+    // outline 버튼은 검은색 텍스트
+    return theme.colors.text;
   };
   
   const getBorderColor = () => {
-    if (variant === 'outline') return theme.colors.primary;
+    if (variant === 'outline') return theme.colors.borderGray; // Figma 디자인: 회색 테두리
     return 'transparent';
   };
   
@@ -80,7 +83,7 @@ const createStyles = (
     button: {
       height,
       paddingHorizontal,
-      borderRadius: 8,
+      borderRadius: 8, // Figma 디자인: 8px 모서리
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: getBackgroundColor(),
@@ -90,7 +93,7 @@ const createStyles = (
     },
     text: {
       fontSize,
-      fontWeight: '600',
+      fontWeight: '600', // Semi Bold
       color: getTextColor(),
     },
     disabled: {

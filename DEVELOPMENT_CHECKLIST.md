@@ -15,6 +15,9 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
 
 ### 프론트엔드 완료 현황
 - ✅ **API 통합**: 완료 (Axios 클라이언트, Repository 패턴, Zustand 연동)
+  - ✅ CourseRepository 구현 완료
+  - ✅ RunningRepository 구현 완료 (백엔드 응답 형식에 맞게 수정 완료)
+  - ✅ API 타입 정의 완료 (백엔드 DTO와 일치)
 - ✅ **UI Integration**: 부분 완료
   - ✅ CourseGenerationScreen 연동 (API 호출, 로딩, 에러 처리, 상세 정보 표시)
   - ✅ MapScreen 연동 (생성된 코스 표시, 네비게이션, 지도 제어)
@@ -24,17 +27,98 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
 - ✅ **기본 구조**: 완료 (Theme, 컴포넌트, 네비게이션, 화면 레이아웃)
 - ✅ **TypeScript 오류**: 수정 완료 (CourseDetailInfo, MapView, Card, Theme)
 - ✅ **Android 빌드**: 성공 (compileSdkVersion 34로 업데이트)
+- ✅ **Figma 화면 구성**: 완료 (4개 주요 화면 레이아웃 디자인 완료)
+  - ✅ MapScreen (지도 메인 화면)
+  - ✅ CourseGenerationScreen (코스 생성 화면)
+  - ✅ CourseListScreen (코스 목록 화면)
+  - ✅ RunningScreen (러닝 추적 화면)
+- ✅ **Figma 디자인 코드 적용**: 완료 (모든 화면의 레이아웃, 색상, 크기를 코드에 반영)
+  - ✅ Theme 색상 추가 (surfaceLight, mapBackground, borderGray)
+  - ✅ Button 컴포넌트 스타일 수정 (outline variant, 버튼 높이)
+  - ✅ Card 컴포넌트 스타일 수정 (모서리 8px, 테두리)
+  - ✅ 모든 화면 스타일 Figma 디자인에 맞게 조정
 - ⚠️ **앱 로드**: Metro Bundler 연결 문제로 인해 앱이 JavaScript 번들을 로드하지 못함
 
+### 최근 완료 작업 (2025-11-22)
+- ✅ **Figma 디자인 코드 적용 완료**: 4개 주요 화면의 레이아웃, 색상, 크기를 코드에 반영
+  - MapScreen: Map Area 여백, Button Container 스타일, 버튼 크기 조정
+  - CourseGenerationScreen: Input Container 배경색, Preset 버튼 크기 조정
+  - CourseListScreen: Search Container 높이, 카드 크기 조정
+  - RunningScreen: Stats Container, Control Container 패딩 확인
+  - Button 컴포넌트: outline variant 스타일, 버튼 높이 조정 (small 40px, medium 48px)
+  - Card 컴포넌트: 모서리 8px, 테두리 스타일 추가
+  - Theme 색상: surfaceLight (#fafafa), mapBackground (#d9d9d9), borderGray (#e0e0e0) 추가
+- ✅ **Figma 화면 구성 완료**: 4개 주요 화면 레이아웃 디자인 완료
+  - MapScreen, CourseGenerationScreen, CourseListScreen, RunningScreen
+- ✅ **프론트엔드 API 코드 검토 및 수정 완료**
+  - RunningRepository 응답 처리 수정 (백엔드 응답 형식에 맞게)
+  - API 타입 정의 추가 (RunningSessionStartResponse 등)
+  - Location Update 요청 형식 수정 (timestamp 필드 추가)
+  - Finish Running 요청 형식 수정 (route 필드 제거)
+
 ### 남은 주요 작업
-1. **프론트엔드 앱 로드 문제 해결** (우선순위 높음)
-   - Metro Bundler 연결 문제 해결
-   - Expo Go vs Expo Dev Client 결정
-   - 네이티브 모듈 호환성 문제 해결
-2. **코스 생성 알고리즘 구현** (백엔드)
-3. **러닝 추적 기능 구현** (프론트엔드: GPS 추적, 실시간 통계)
-4. **RunningScreen 완전 연동** (프론트엔드)
-5. **코스 관리 기능 완성** (프론트엔드: 목록, 검색, 저장)
+
+#### 우선순위 1: 프론트엔드 앱 로드 문제 해결 (즉시 필요)
+1. **Metro Bundler 연결 문제 해결**
+   - **결정**: Android Studio + Expo Dev Client 유지 (네이티브 모듈 필수)
+   - **해결 방법**:
+     - 캐시 클리어: `expo start -c --dev-client`
+     - 네트워크 설정 확인: 방화벽 포트 8081 허용
+     - 포트 포워딩: `adb reverse tcp:8081 tcp:8081`
+     - WebSocket 연결 테스트
+   - **목표**: 앱이 정상적으로 JavaScript 번들을 로드하고 실행됨
+
+#### 우선순위 2: 앱 기능 테스트 (앱 로드 후)
+2. **UI/UX 검증**
+   - Figma 디자인 적용 확인 (레이아웃, 색상, 크기)
+   - 네비게이션 흐름 검증
+   - 로딩 상태 표시 확인
+   - 에러 처리 확인
+3. **API 통합 테스트**
+   - 코스 목록 조회 테스트 (샘플 데이터 9개 확인)
+   - 코스 생성 테스트 (MockLoopGenerator 검증)
+   - 코스 상세 정보 표시 확인
+   - Running API 통합 테스트 (시작, 위치 업데이트, 종료)
+
+#### 우선순위 3: 러닝 추적 기능 구현
+4. **GPS 위치 추적 구현** (프론트엔드)
+   - 위치 권한 요청
+   - GPS 위치 추적 시작/중지
+   - 주기적 위치 업데이트 (예: 5초마다)
+   - 위치 정확도 필터링
+5. **실시간 통계 계산** (프론트엔드)
+   - 거리 계산 (Haversine 공식)
+   - 시간 계산
+   - 페이스 계산 (분/km)
+   - 속도 계산 (km/h)
+   - 고저차 계산 (가속도계/기압계 활용)
+6. **RunningScreen 완전 연동**
+   - GPS 추적과 UI 연동
+   - 실시간 통계 표시
+   - 러닝 경로 지도 표시
+   - 백엔드 동기화 (이미 구현됨)
+
+#### 우선순위 4: 코스 관리 기능 완성
+7. **코스 목록 화면 API 연동**
+   - 코스 목록 조회 API 호출
+   - 코스 카드 클릭 시 상세 정보 표시
+   - 코스 삭제 기능
+8. **코스 검색 기능**
+   - 실시간 검색 필터링 (이미 구현됨)
+   - 검색 결과 표시
+9. **코스 저장 기능**
+   - 생성된 코스 저장 API 호출
+   - 저장 성공/실패 처리
+
+#### 우선순위 5: 코스 생성 알고리즘 구현 (백엔드)
+10. **DistanceConstrainedLoopGenerator 구현**
+    - Step 기반 원둘레 분할
+    - 양방향 Adaptive Step 피드백
+    - S-P 기반 Fallback
+    - 도로 스냅핑 로직
+    - 루프 폐쇄 검증
+    - 자가 교차 검증
+    - 알고리즘 단위 테스트 작성
 
 ---
 
@@ -123,6 +207,7 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
 - [x] 코스 삭제 API (`DELETE /api/v1/courses/{id}`)
 - [x] 러닝 시작 API (`POST /api/v1/running/start`)
 - [x] 러닝 업데이트 API (`PUT /api/v1/running/{session_id}`)
+- [x] 위치 업데이트 API (`POST /api/v1/running/{session_id}/location`)
 - [x] 러닝 종료 API (`POST /api/v1/running/{session_id}/finish`)
 - [x] API 스키마 정의 (Pydantic) - DTO 재사용
 - [x] 에러 핸들링 구현
@@ -189,10 +274,14 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
       - [ ] `react-native-maps` → `expo-location` + Expo Maps API
       - [ ] `@react-native-community/geolocation` → `expo-location`
   - **다음 단계**:
-    1. Metro Bundler를 Expo CLI로 재시작 (`npm start`)
+    1. Metro Bundler를 Expo CLI로 재시작 (`expo start -c --dev-client`)
     2. Expo Dev Client에서 서버 연결 확인
     3. WebSocket 연결 문제 해결
     4. 앱이 정상적으로 로드되는지 확인
+  - **권장 사항**: Android Studio + Expo Dev Client 유지
+    - 네이티브 모듈 필수 (`react-native-maps`, `@react-native-community/geolocation`)
+    - 빌드는 이미 성공했으므로 연결 문제만 해결하면 됨
+    - Expo Go로 전환 시 대규모 코드 수정 필요 (비권장)
   - **참고**: 
     - Android Studio 빌드는 성공했으며, 네이티브 코드는 정상 작동
     - 문제는 JavaScript 번들 로딩 단계에서 발생
@@ -296,6 +385,12 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
 - [x] CourseListScreen 기본 레이아웃
 - [x] MapScreen 기능 완성 (코스 표시, 네비게이션, 지도 제어)
 - [x] CourseGenerationScreen 기능 완성 (API 연동, 로딩, 에러 처리, 상세 정보 표시, 재생성)
+- [x] **Figma 화면 구성 디자인 완료** (채널: ra1r3dhi)
+  - 4개 주요 화면 레이아웃 디자인 완료
+  - 화면 구조 및 컴포넌트 배치 검토 가능
+- [x] **Figma 디자인 코드 적용 완료**
+  - 모든 화면의 레이아웃, 색상, 크기를 Figma 디자인에 맞게 코드에 반영
+  - Theme 색상 추가 및 컴포넌트 스타일 수정 완료
 - [ ] RunningScreen 기능 완성 (GPS 추적 미구현)
 - [ ] CourseListScreen 기능 완성 (API 연동 필요)
 - [ ] 프로필 화면 (향후)
@@ -344,8 +439,13 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
 
 ### Figma MCP 연동
 - [x] Figma MCP 서버 연결 설정
-- [x] 채널 연결 테스트
+- [x] 채널 연결 테스트 (채널: ra1r3dhi)
 - [x] 기본 기능 테스트 (요소 생성, 수정, 읽기)
+- [x] 4개 주요 화면 레이아웃 디자인 완료
+  - [x] MapScreen (지도 메인 화면)
+  - [x] CourseGenerationScreen (코스 생성 화면)
+  - [x] CourseListScreen (코스 목록 화면)
+  - [x] RunningScreen (러닝 추적 화면)
 
 ---
 
@@ -354,16 +454,18 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
 ### API 통합
 - [x] 백엔드 API 클라이언트 구현
   - [x] Axios 설치 및 설정
-  - [x] API Client 구현 (인터셉터, 에러 핸들링)
+  - [x] API Client 구현 (인터셉터, 에러 핸들링, 로깅)
   - [x] API 엔드포인트 상수 정의
-  - [x] TypeScript 타입 정의
+  - [x] TypeScript 타입 정의 (백엔드 DTO와 일치)
 - [x] CourseRepository 구현 (generateCourse, saveCourse, listCourses, getCourse)
 - [x] RunningRepository 구현 (startRunning, updateLocation, finishRunning)
+  - [x] 백엔드 응답 형식에 맞게 수정 완료 (ApiResponse 래퍼 제거, 필드명 매핑)
 - [x] Zustand 스토어와 Repository 연동
   - [x] courseStore.ts 업데이트
   - [x] runningStore.ts 업데이트
 - [ ] 인증 처리 (향후)
 - [x] 에러 핸들링
+- [x] 로깅 규칙 준수 (Logger 유틸리티 사용)
 - [ ] 재시도 로직
 - [ ] 타임아웃 처리
 
@@ -464,15 +566,18 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
 - ✅ 문서화 완료 (README 파일들, 설계 문서 업데이트)
 - ✅ API 엔드포인트 구현 완료 (Interface 계층 테스트 11개 통과)
 - ✅ 프론트엔드 API 통합 완료
-  - API 클라이언트 구현 (Axios)
+  - API 클라이언트 구현 (Axios, 로깅 규칙 준수)
   - Repository 패턴 구현 (Course, Running)
   - Zustand 스토어 연동
+  - 백엔드 응답 형식에 맞게 수정 완료 (RunningRepository)
 - ✅ UI 화면 연동 부분 완료
   - CourseGenerationScreen 연동 완료 (API 호출, 로딩, 에러 처리, 상세 정보 표시, 재생성)
   - MapScreen 연동 완료 (코스 표시, 네비게이션, 지도 제어)
   - UX 개선 완료 (네비게이션 흐름 수정)
 - ✅ TypeScript 오류 수정 완료
 - ✅ Android 빌드 성공 (compileSdkVersion 34)
+- ✅ Figma 화면 구성 디자인 완료 (4개 주요 화면)
+  - MapScreen, CourseGenerationScreen, CourseListScreen, RunningScreen
 - ⚠️ 프론트엔드 앱 로드 문제 (Metro Bundler 연결)
 - 🚧 코스 생성 알고리즘 구현 필요
 - 🚧 RunningScreen 완전 연동 필요 (GPS 추적 구현)

@@ -332,6 +332,10 @@ export const API_BASE_URL = __DEV__
 
 ### 완료된 작업 ✅
 - ✅ API 통합 완료 (Axios 클라이언트, Repository 패턴, Zustand 연동)
+  - ✅ CourseRepository 구현 완료
+  - ✅ RunningRepository 구현 완료 (백엔드 응답 형식에 맞게 수정 완료)
+  - ✅ API 타입 정의 완료 (백엔드 DTO와 일치)
+  - ✅ 로깅 규칙 준수 (Logger 유틸리티 사용)
 - ✅ UI Integration 부분 완료
   - ✅ CourseGenerationScreen 연동 (API 호출, 로딩, 에러 처리, 상세 정보 표시)
   - ✅ MapScreen 연동 (생성된 코스 표시, 네비게이션, 지도 제어)
@@ -339,6 +343,19 @@ export const API_BASE_URL = __DEV__
   - ✅ UX 개선 (네비게이션 흐름 수정)
 - ✅ TypeScript 오류 수정 완료
 - ✅ Android 빌드 성공 (compileSdkVersion 34)
+- ✅ **Figma 화면 구성 디자인 완료** (채널: ra1r3dhi)
+  - ✅ MapScreen (지도 메인 화면)
+  - ✅ CourseGenerationScreen (코스 생성 화면)
+  - ✅ CourseListScreen (코스 목록 화면)
+  - ✅ RunningScreen (러닝 추적 화면)
+- ✅ **Figma 디자인 코드 적용 완료**
+  - ✅ Theme 색상 추가 (surfaceLight #fafafa, mapBackground #d9d9d9, borderGray #e0e0e0)
+  - ✅ Button 컴포넌트 스타일 수정 (outline variant 흰색 배경/회색 테두리, 높이 조정)
+  - ✅ Card 컴포넌트 스타일 수정 (모서리 8px, 테두리 추가)
+  - ✅ MapScreen 스타일 수정 (Map Area 여백, Button Container 패딩)
+  - ✅ CourseGenerationScreen 스타일 수정 (Input Container 배경색, Preset 버튼 크기)
+  - ✅ CourseListScreen 스타일 수정 (Search Container 높이, 카드 크기)
+  - ✅ RunningScreen 스타일 수정 (Stats Container, Control Container 패딩)
 
 ### 현재 문제 ⚠️
 - ⚠️ **앱 로드 실패**: Android Studio에서 빌드는 성공했지만 앱이 JavaScript 번들을 로드하지 못함
@@ -346,30 +363,109 @@ export const API_BASE_URL = __DEV__
   - WebSocket 연결 오류 발생
   - Expo Dev Client에서 서버 선택 후 로드되지 않음
 
+## 개발 전략: Android Studio vs Expo Go
+
+### 권장 방식: Android Studio + Expo Dev Client 유지 ✅
+
+**이유:**
+1. **네이티브 모듈 필수**: `react-native-maps`, `@react-native-community/geolocation` 사용 중
+2. **빌드 성공**: Android Studio 빌드는 이미 성공했으므로 연결 문제만 해결하면 됨
+3. **코드 변경 최소화**: 현재 구현된 코드를 그대로 사용 가능
+4. **프로덕션 준비**: 실제 배포 환경과 동일한 구조
+
+**Expo Go로 전환 시 문제점:**
+- ❌ `react-native-maps` 미지원 → 대규모 코드 수정 필요
+- ❌ `@react-native-community/geolocation` 미지원 → 위치 추적 로직 재작성 필요
+- ❌ 프로덕션 배포 불가
+
+### Metro Bundler 연결 문제 해결 방법
+
+1. **캐시 클리어 후 재시작**
+   ```bash
+   cd mobile
+   expo start -c --dev-client
+   ```
+
+2. **네트워크 설정 확인**
+   - 방화벽에서 포트 8081 허용
+   - `adb reverse tcp:8081 tcp:8081` 포트 포워딩
+   - WebSocket 연결 테스트
+
+3. **대안 방법**
+   - `npx react-native start` 직접 실행
+   - 물리 기기 사용 (에뮬레이터 대신)
+
 ## 다음 단계
 
-1. **프론트엔드 앱 로드 문제 해결** (우선순위 높음)
-   - Metro Bundler 연결 문제 해결
-   - Expo Dev Client 방식으로 앱 정상 실행 확인
-   - WebSocket 연결 문제 해결
+### 우선순위 1: 프론트엔드 앱 로드 문제 해결 (즉시 필요)
+1. **Metro Bundler 연결 문제 해결**
+   - **결정**: Android Studio + Expo Dev Client 유지 (네이티브 모듈 필수)
+   - **해결 방법**:
+     - 캐시 클리어: `expo start -c --dev-client`
+     - 네트워크 설정 확인: 방화벽 포트 8081 허용
+     - 포트 포워딩: `adb reverse tcp:8081 tcp:8081`
+     - WebSocket 연결 테스트
+   - **목표**: 앱이 정상적으로 JavaScript 번들을 로드하고 실행됨
 
-2. **러닝 추적 기능 구현**
-   - GPS 위치 추적
-   - 실시간 통계 계산
+### 우선순위 2: 앱 기능 테스트 (앱 로드 후)
+2. **UI/UX 검증**
+   - Figma 디자인 적용 확인 (레이아웃, 색상, 크기)
+   - 네비게이션 흐름 검증
+   - 로딩 상태 표시 확인
+   - 에러 처리 확인
+3. **API 통합 테스트**
+   - 코스 목록 조회 테스트 (샘플 데이터 9개 확인)
+   - 코스 생성 테스트 (MockLoopGenerator 검증)
+   - 코스 상세 정보 표시 확인
+   - Running API 통합 테스트 (시작, 위치 업데이트, 종료)
+
+### 우선순위 3: 러닝 추적 기능 구현
+4. **GPS 위치 추적 구현**
+   - 위치 권한 요청
+   - GPS 위치 추적 시작/중지
+   - 주기적 위치 업데이트 (예: 5초마다)
+   - 위치 정확도 필터링
+5. **실시간 통계 계산**
+   - 거리 계산 (Haversine 공식)
+   - 시간 계산
+   - 페이스 계산 (분/km)
+   - 속도 계산 (km/h)
+   - 고저차 계산 (가속도계/기압계 활용)
+6. **RunningScreen 완전 연동**
+   - GPS 추적과 UI 연동
+   - 실시간 통계 표시
+   - 러닝 경로 지도 표시
    - 백엔드 동기화 (이미 구현됨)
 
-3. **코스 관리 기능 완성**
-   - 코스 목록 화면 API 연동
-   - 코스 검색 기능
-   - 코스 저장/로드 기능
+### 우선순위 4: 코스 관리 기능 완성
+7. **코스 목록 화면 API 연동**
+   - 코스 목록 조회 API 호출
+   - 코스 카드 클릭 시 상세 정보 표시
+   - 코스 삭제 기능
+8. **코스 검색 기능**
+   - 실시간 검색 필터링 (이미 구현됨)
+   - 검색 결과 표시
+9. **코스 저장 기능**
+   - 생성된 코스 저장 API 호출
+   - 저장 성공/실패 처리
 
-4. **코스 생성 알고리즘 구현** (백엔드)
-   - DistanceConstrainedLoopGenerator 구현
+### 우선순위 5: 코스 생성 알고리즘 구현 (백엔드)
+10. **DistanceConstrainedLoopGenerator 구현**
+    - Step 기반 원둘레 분할
+    - 양방향 Adaptive Step 피드백
+    - S-P 기반 Fallback
+    - 도로 스냅핑 로직
+    - 루프 폐쇄 검증
+    - 자가 교차 검증
+    - 알고리즘 단위 테스트 작성
 
-5. **디자인 작업** (Figma MCP 활용)
-   - 화면별 하이파이 디자인 완성
-   - 컴포넌트 디자인 시스템 구축
-   - 인터랙션 프로토타입 작성
+**최근 업데이트 (2025-11-22)**:
+- ✅ Figma 디자인 코드 적용 완료 (모든 화면의 레이아웃, 색상, 크기 반영)
+- ✅ Figma 화면 구성 디자인 완료 (4개 주요 화면)
+- ✅ 프론트엔드 API 코드 검토 및 수정 완료
+  - RunningRepository 응답 처리 수정 (백엔드 응답 형식에 맞게)
+  - API 타입 정의 추가 및 수정
+  - 로깅 규칙 준수 (Logger 유틸리티 사용)
 
 ## API 명세서
 
@@ -380,4 +476,483 @@ export const API_BASE_URL = __DEV__
 - **타입 안정성**: API 스펙을 기반으로 TypeScript 타입 생성 가능
 
 자세한 내용은 `../plan/api-specification.yaml`, `../plan/SDS_Running_App.md` 및 `plan/Frontend_Architecture_Design.md` 참고.
+
+---
+
+## 주요 화면 요구 명세서
+
+이 섹션은 Running Map App의 4개 주요 화면에 대한 상세 요구 명세서입니다. 화면 구조, 레이아웃, 기능, 네비게이션 흐름을 포함합니다.
+
+### 화면 개요
+
+앱은 4개의 주요 화면으로 구성됩니다:
+1. **MapScreen**: 지도 메인 화면
+2. **CourseGenerationScreen**: 코스 생성 화면
+3. **CourseListScreen**: 코스 목록 화면
+4. **RunningScreen**: 러닝 추적 화면
+
+**화면 크기**: 모든 화면은 375x812 (iPhone 기준) 크기로 설계됨
+
+---
+
+### 1. MapScreen (지도 메인 화면)
+
+#### 화면 목적
+- 현재 위치를 지도에 표시
+- 생성된 코스를 지도에 표시
+- 코스 생성 및 내 코스 목록으로 이동
+
+#### 레이아웃 구조
+
+**Container (전체 화면)**
+- 타입: `View`
+- 스타일: `flex: 1`
+- 배경색: `theme.colors.background`
+
+**Map Area (지도 영역)**
+- 타입: `CustomMapView`
+- 위치: (10, 11) - 상단 여백 10px, 좌측 여백 10px
+- 크기: 355x483
+- 스타일: `flex: 1`
+- 배경색: 회색 (#d9d9d9)
+- 기능:
+  - 현재 위치 표시
+  - 생성된 코스 폴리라인 표시 (있는 경우)
+  - 현재 위치 버튼 표시 (`showLocationButton={true}`)
+
+**Button Container (버튼 컨테이너)**
+- 타입: `View`
+- 위치: (0, 483) - Map Area 아래
+- 크기: 375x132
+- 배경색: 흰색
+- 스타일:
+  - 패딩: `theme.spacing.md` (16px)
+  - 배경색: `theme.colors.surface`
+  - gap: `theme.spacing.sm`
+
+#### 버튼 명세
+
+**"코스 생성" 버튼**
+- 타입: `Button`
+- 위치: (16, 499)
+- 크기: 343x48
+- variant: `primary` (주요 버튼, 주황색 RGB: 1, 0.42, 0.21)
+- fullWidth: `true`
+- 텍스트: "코스 생성" (흰색, 16px, Semi Bold)
+- 텍스트 위치: (156, 513) - 버튼 중앙 정렬
+- 모서리: 8px 둥글게
+- 기능: `CourseGenerationScreen`으로 이동
+- 핸들러: `handleGenerateCourse()`
+
+**"내 코스" 버튼**
+- 타입: `Button`
+- 위치: (16, 563)
+- 크기: 343x48
+- variant: `outline` (아웃라인 버튼)
+- fullWidth: `true`
+- 배경색: 흰색 + 회색 테두리 (RGB: 0.88, 0.88, 0.88, 두께: 1px)
+- 텍스트: "내 코스" (검은색, 16px, Semi Bold)
+- 텍스트 위치: (163, 577) - 버튼 중앙 정렬
+- 모서리: 8px 둥글게
+- 기능: `CoursesTab` (CourseListScreen)으로 이동
+- 핸들러: `handleViewCourses()`
+
+**버튼 간격**: 64px (563 - 499)
+
+---
+
+### 2. CourseGenerationScreen (코스 생성 화면)
+
+#### 화면 목적
+- 목표 거리를 입력받아 코스 생성
+- 생성된 코스의 상세 정보 표시
+- 생성된 코스 사용 또는 재생성
+
+#### 레이아웃 구조
+
+**Container (전체 화면)**
+- 타입: `View`
+- 스타일: `flex: 1`
+- 배경색: `theme.colors.background`
+
+**Map Area (지도 영역)**
+- 타입: `CustomMapView`
+- 위치: (11, 10) - 상단 여백 10px, 좌측 여백 10px
+- 크기: 355x487 (전체의 60%)
+- 스타일: `flex: 0.6`
+- 배경색: 회색 (#d9d9d9)
+- 기능:
+  - 현재 위치 표시
+  - 생성된 코스 폴리라인 표시 (생성 후)
+
+**Input Container (입력 컨테이너)**
+- 타입: `View`
+- 위치: (0, 498) - Map Area 아래
+- 크기: 375x325 (전체의 40%)
+- 스타일: `flex: 0.4`
+- 배경색: 연한 회색 (#fafafa)
+- 패딩: 16px
+- 내부 구조: `ScrollView` 포함
+
+#### 상태별 UI 구성
+
+**상태 1: 코스 생성 전**
+
+**Input (거리 입력 필드)**
+- 타입: `Input`
+- 위치: (16, 16)
+- 크기: 343x48
+- label: "목표 거리 (km)"
+- placeholder: "예: 5.0"
+- keyboardType: `decimal-pad`
+- 배경색: 흰색
+- 테두리: 회색
+- 기능: 거리 입력 및 에러 메시지 표시
+
+**Preset Container (프리셋 버튼 컨테이너)**
+- 타입: `View`
+- 위치: (16, 80)
+- 스타일:
+  - flexDirection: `row`
+  - gap: `theme.spacing.sm`
+  - marginBottom: `theme.spacing.md`
+
+**프리셋 버튼들** (각 107x40, 3개 가로 배치):
+- **"3km" 버튼**
+  - variant: `outline`
+  - size: `small`
+  - flex: `1`
+  - 기능: 거리 입력 필드에 "3" 입력
+
+- **"5km" 버튼**
+  - variant: `outline`
+  - size: `small`
+  - flex: `1`
+  - 기능: 거리 입력 필드에 "5" 입력
+
+- **"10km" 버튼**
+  - variant: `outline`
+  - size: `small`
+  - flex: `1`
+  - 기능: 거리 입력 필드에 "10" 입력
+
+**"코스 생성" 버튼 또는 Loading**
+- 위치: (16, 136)
+- 크기: 343x48
+- 버튼:
+  - variant: `primary`
+  - fullWidth: `true`
+  - disabled: `!distance` (거리 입력 없으면 비활성화)
+  - 배경색: 주황색 (#FF6B35)
+  - 기능: 코스 생성 API 호출
+- Loading (생성 중일 때):
+  - 메시지: "코스를 생성하는 중..."
+
+**상태 2: 코스 생성 후**
+
+**CourseDetailInfo (코스 상세 정보 컴포넌트)**
+- 타입: `CourseDetailInfo`
+- 표시 정보:
+  - 목표 거리 (km)
+  - 실제 거리 (km)
+  - 상대 오차 (%)
+  - 알고리즘 이름
+  - 반복 횟수
+  - 스텝 사용량
+  - 상태
+
+**Button Group (버튼 그룹)**
+- 타입: `View`
+- 스타일:
+  - marginTop: `theme.spacing.md`
+  - gap: `theme.spacing.sm`
+
+**버튼들:**
+- **"이 코스 사용" 버튼**
+  - variant: `primary`
+  - fullWidth: `true`
+  - 기능: MapTab으로 이동하여 생성된 코스 표시
+  - 핸들러: `handleUseCourse()`
+
+- **"다시 생성" 버튼**
+  - variant: `outline`
+  - fullWidth: `true`
+  - disabled: `isGenerating`
+  - 기능: 동일한 거리로 코스 재생성
+  - 핸들러: `handleRegenerate()`
+
+---
+
+### 3. CourseListScreen (코스 목록 화면)
+
+#### 화면 목적
+- 저장된 코스 목록 표시
+- 코스 검색 기능
+- 코스 선택 및 상세 정보 확인
+
+#### 레이아웃 구조
+
+**Container (전체 화면)**
+- 타입: `View`
+- 스타일: `flex: 1`
+- 배경색: `theme.colors.background`
+
+**Search Container (검색 컨테이너)**
+- 타입: `View`
+- 위치: (0, 0) - 상단 고정
+- 크기: 375x80
+- 배경색: 연한 회색 (#fafafa)
+- 스타일:
+  - 패딩: `theme.spacing.md`
+
+**Input (검색 입력 필드)**
+- 타입: `Input`
+- 위치: (16, 16)
+- 크기: 343x48
+- placeholder: "코스 검색..." (26, 30), 회색 텍스트
+- 배경색: 흰색
+- 테두리: 회색
+- 모서리: 8px 둥글게
+- 기능: 실시간 검색 필터링 (코스 이름 기준)
+
+**List Container (목록 컨테이너)**
+- 타입: `View` 또는 `FlatList`
+- 위치: (0, 80) - Search Container 아래
+- 크기: 375x732
+- 배경색: 흰색
+
+**Empty Container (코스가 없을 때)**
+- 타입: `View`
+- 스타일:
+  - flex: `1`
+  - justifyContent: `center`
+  - alignItems: `center`
+- 내용: "저장된 코스가 없습니다." 텍스트
+
+**FlatList (코스가 있을 때)**
+- 타입: `FlatList`
+- 스타일:
+  - contentContainerStyle: `listContainer` (패딩: `theme.spacing.md`)
+
+**코스 카드들**
+- 타입: `Card`
+- 크기: 343x120
+- 카드 간격: 16px
+- 카드 위치:
+  - 카드 1: (16, 16)
+  - 카드 2: (16, 152)
+  - 카드 3: (16, 288)
+- 카드 스타일:
+  - elevated: `true`
+  - 배경색: 흰색
+  - 테두리: 회색
+  - 모서리: 8px 둥글게
+  - marginBottom: `theme.spacing.md`
+
+**각 카드 내부 정보:**
+- **코스 이름**
+  - 스타일: `theme.typography.h3` (20px, Semi Bold)
+  - 색상: `theme.colors.text` (검은색)
+  - 예시: "서울 한강공원 5km"
+
+- **거리**
+  - 스타일: `theme.typography.body` (16px, Regular)
+  - 색상: `theme.colors.textSecondary` (회색)
+  - 형식: "거리: X.XX km"
+
+- **생성일**
+  - 스타일: `theme.typography.caption` (12px, Regular)
+  - 색상: `theme.colors.textSecondary` (회색)
+  - 형식: "생성일: YYYY-MM-DD"
+
+**카드 기능:**
+- 클릭 시: 코스 선택 및 상세 정보 확인 (TODO: 상세 화면으로 이동)
+
+---
+
+### 4. RunningScreen (러닝 추적 화면)
+
+#### 화면 목적
+- 러닝 중 실시간 통계 표시
+- 러닝 경로 지도 표시
+- 러닝 일시정지/재개 및 종료
+
+#### 레이아웃 구조
+
+**Container (전체 화면)**
+- 타입: `View`
+- 스타일: `flex: 1`
+- 배경색: `theme.colors.background`
+
+**Stats Container (통계 컨테이너)**
+- 타입: `View`
+- 위치: 화면 상단 고정
+- 스타일:
+  - 패딩: `theme.spacing.md`
+  - 배경색: `theme.colors.surface`
+
+**RunningStats 컴포넌트**
+- 타입: `RunningStats`
+- 구조: 3개의 Row로 구성
+
+**Row 1 (거리, 시간)**
+- **거리 (km)**
+  - 큰 숫자 표시
+  - 형식: "X.XX"
+  - 단위: "거리 (km)"
+
+- **시간**
+  - 큰 숫자 표시
+  - 형식: "HH:MM:SS"
+  - 단위: "시간"
+
+**Row 2 (페이스, 속도)**
+- **페이스 (분/km)**
+  - 형식: "MM:SS"
+  - 단위: "페이스 (분/km)"
+
+- **속도 (km/h)**
+  - 형식: "X.X"
+  - 단위: "속도 (km/h)"
+
+**Row 3 (고저차)**
+- **고저차 (m)**
+  - 형식: "+XXX"
+  - 단위: "고저차 (m)"
+  - 중앙 정렬
+
+**Map Area (지도 영역)**
+- 타입: `CustomMapView`
+- 스타일: `flex: 1` (통계와 컨트롤 사이의 공간)
+- 기능:
+  - 현재 위치 표시
+  - 러닝 경로 표시 (실시간 업데이트)
+
+**Control Container (컨트롤 컨테이너)**
+- 타입: `View`
+- 위치: 화면 하단 고정
+- 스타일:
+  - flexDirection: `row`
+  - 패딩: `theme.spacing.md`
+  - 배경색: `theme.colors.surface`
+  - gap: `theme.spacing.sm`
+
+#### 버튼 명세
+
+**"일시정지/재개" 버튼**
+- 타입: `Button`
+- variant: `outline`
+- 스타일: `flex: 1`
+- 배경색: 흰색 + 회색 테두리
+- 동적 텍스트:
+  - `isPaused ? '재개' : '일시정지'`
+- 기능:
+  - 일시정지 상태: 러닝 재개 (`resumeRunning()`)
+  - 실행 중: 러닝 일시정지 (`pauseRunning()`)
+- 핸들러: `handlePause()`
+
+**"종료" 버튼**
+- 타입: `Button`
+- variant: `primary` (주요 버튼, 주황색)
+- 스타일: `flex: 1`
+- 기능: 러닝 종료 및 결과 화면으로 이동
+- 핸들러: `handleFinish()` → `finishRunning()`
+
+---
+
+### 화면 간 네비게이션 흐름
+
+```
+MapScreen
+  ├─ "코스 생성" 버튼 → CourseGenerationScreen
+  └─ "내 코스" 버튼 → CourseListScreen
+
+CourseGenerationScreen
+  ├─ "이 코스 사용" 버튼 → MapScreen (생성된 코스 표시)
+  └─ "다시 생성" 버튼 → 동일 화면 (코스 재생성)
+
+CourseListScreen
+  └─ 코스 카드 클릭 → 코스 상세 화면 (TODO)
+
+RunningScreen
+  └─ "종료" 버튼 → 러닝 결과 화면 (TODO)
+```
+
+---
+
+### 공통 컴포넌트
+
+#### CustomMapView
+- **위치**: 모든 화면에서 사용
+- **기능**:
+  - 지도 표시
+  - 현재 위치 마커
+  - 코스 폴리라인 표시
+  - 현재 위치 버튼 (선택적)
+
+#### Button
+- **variant**: `primary` (주요), `outline` (보조)
+- **size**: `small`, `default`
+- **fullWidth**: 전체 너비 사용 여부
+
+#### Input
+- **label**: 라벨 텍스트
+- **placeholder**: 플레이스홀더 텍스트
+- **keyboardType**: 키보드 타입
+- **error**: 에러 메시지
+
+#### Card
+- **elevated**: 그림자 효과
+- **onPress**: 클릭 핸들러
+
+#### Loading
+- **message**: 로딩 메시지
+
+---
+
+### 스타일 가이드
+
+#### 색상
+- **Primary**: 주황색 (`#FF6B35` 또는 RGB: 1, 0.42, 0.21)
+- **Background**: 배경색 (`theme.colors.background`)
+- **Surface**: 표면 색상 (`theme.colors.surface`, 연한 회색 #fafafa)
+- **Text**: 텍스트 색상 (`theme.colors.text`)
+- **Text Secondary**: 보조 텍스트 색상 (`theme.colors.textSecondary`)
+
+#### 간격 (Spacing)
+- **xs**: 매우 작은 간격
+- **sm**: 작은 간격
+- **md**: 중간 간격 (16px)
+- **lg**: 큰 간격
+
+#### 타이포그래피
+- **h1, h2, h3**: 제목 스타일 (h3: 20px, Semi Bold)
+- **body**: 본문 스타일 (16px, Regular)
+- **caption**: 캡션 스타일 (12px, Regular)
+- **button**: 버튼 텍스트 (16px, Semi Bold)
+- **statMedium**: 통계 숫자 스타일
+
+#### 버튼 텍스트 중앙 정렬 계산식
+- 버튼 너비: 343px
+- 버튼 시작 x: 16px
+- 버튼 중앙 x: 187.5px
+- 텍스트 x = 187.5 - (텍스트 너비 / 2)
+
+#### 버튼 수직 간격
+- 버튼 높이: 48px
+- 버튼 간 gap: 16px
+- 두 번째 버튼 y = 첫 번째 버튼 y + 64
+
+---
+
+### 참고사항
+
+1. **반응형 디자인**: 모든 화면은 375x812 (iPhone 기준) 크기로 설계됨
+2. **상태 관리**: Zustand를 사용하여 전역 상태 관리
+3. **네비게이션**: React Navigation을 사용하여 화면 전환
+4. **테마**: 라이트/다크 모드 지원 (현재는 라이트 모드만 구현)
+5. **로딩 상태**: 비동기 작업 시 Loading 컴포넌트 표시
+6. **에러 처리**: 에러 발생 시 Alert 또는 에러 메시지 표시
+7. **Figma 디자인**: 모든 화면은 Figma에서 디자인 완료 (채널: ra1r3dhi)
+8. **최종 확정**: 1~3번째 화면 (MapScreen, CourseGenerationScreen, CourseListScreen)은 최종 확정되어 더 이상 수정하지 않음
 

@@ -81,17 +81,21 @@ const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.background,
     },
     searchContainer: {
-      padding: theme.spacing.md,
-      backgroundColor: theme.colors.surface,
+      height: 80, // Figma 디자인: 80px 고정 높이
+      padding: theme.spacing.md, // Figma 디자인: 16px 패딩
+      backgroundColor: theme.colors.surfaceLight, // Figma 디자인: #fafafa
+      justifyContent: 'center', // Input을 수직 중앙 정렬
     },
     searchInput: {
       marginBottom: 0,
     },
     listContainer: {
-      padding: theme.spacing.md,
+      padding: theme.spacing.md, // Figma 디자인: 16px 패딩
     },
     courseCard: {
-      marginBottom: theme.spacing.md,
+      marginBottom: theme.spacing.md, // Figma 디자인: 카드 간격 16px
+      minHeight: 120, // Figma 디자인: 카드 높이 120px
+      width: '100%', // 패딩 제외 너비는 자동 조정
     },
     courseName: {
       ...theme.typography.h3,

@@ -106,12 +106,14 @@ export const useRunningStore = create<RunningStore>((set, get) => ({
       const { runningRepository } = await import('../../application/repositories/RunningRepository');
 
       // Send location update to backend
+      const timestamp = new Date().toISOString();
       await runningRepository.updateLocation(state.session.id, {
         location: {
           latitude: location.latitude,
           longitude: location.longitude,
-          timestamp: new Date().toISOString(),
+          timestamp,
         },
+        timestamp,
       });
 
       const locations = [...state.session.locations, location];
@@ -164,11 +166,6 @@ export const useRunningStore = create<RunningStore>((set, get) => ({
           latitude: currentLocation.latitude,
           longitude: currentLocation.longitude,
         },
-        route: state.session.locations.map(loc => ({
-          lat: loc.latitude,
-          lon: loc.longitude,
-          timestamp: new Date().toISOString(),
-        })),
       });
 
       const finishedSession: RunningSession = {

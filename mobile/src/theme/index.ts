@@ -19,12 +19,15 @@ export interface Theme {
     backgroundSecondary: string;
     surface: string;
     surfaceElevated: string;
+    surfaceLight: string;
+    mapBackground: string;
     text: string;
     textSecondary: string;
     textDisabled: string;
     textInverse: string;
     border: string;
     borderLight: string;
+    borderGray: string;
     success: string;
     error: string;
     warning: string;
@@ -61,6 +64,8 @@ export const darkTheme: Theme = {
     backgroundSecondary: colors.dark.backgroundSecondary,
     surface: colors.dark.surface,
     surfaceElevated: colors.dark.surfaceElevated,
+    surfaceLight: colors.dark.surfaceElevated, // 다크 모드에서는 surfaceElevated와 동일
+    mapBackground: colors.dark.backgroundSecondary, // 다크 모드에서는 어두운 배경
     // 다크 모드 텍스트 색상
     text: colors.dark.text,
     textSecondary: colors.dark.textSecondary,
@@ -69,6 +74,7 @@ export const darkTheme: Theme = {
     // 다크 모드 테두리 색상
     border: colors.dark.border,
     borderLight: colors.dark.border,
+    borderGray: colors.dark.border, // 다크 모드에서는 dark.border와 동일
     // Status 색상 유지
     success: colors.success,
     error: colors.error,

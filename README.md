@@ -295,6 +295,11 @@ pytest --cov=backend --cov-report=html
 - 통합 테스트: 7개 통과 (Redis: 6개, DB 연결: 1개)
 - **총 96개 테스트 통과**
 
+**최근 업데이트 (2025-11-22)**:
+- ✅ Figma 디자인 코드 적용 완료 (모든 화면의 레이아웃, 색상, 크기 반영)
+- ✅ Figma 화면 구성 디자인 완료 (4개 주요 화면)
+- ✅ 프론트엔드 API 코드 검토 및 수정 완료 (RunningRepository, 타입 정의)
+
 ### 프론트엔드 테스트
 
 ```bash
@@ -369,14 +374,24 @@ npm test
   - API 테스트 (11개 통과)
 - ✅ 프론트엔드 기본 구조 (Theme, 컴포넌트, 네비게이션)
 - ✅ 프론트엔드 API 통합
-  - Axios 클라이언트 구현
+  - Axios 클라이언트 구현 (로깅 규칙 준수)
   - Repository 패턴 (Course, Running)
   - Zustand 스토어 연동
+  - 백엔드 응답 형식에 맞게 수정 완료 (RunningRepository)
 - ✅ UI Integration 부분 완료
   - CourseGenerationScreen 연동 (API 호출, 로딩, 에러 처리, 상세 정보 표시, 재생성)
   - MapScreen 연동 (생성된 코스 표시, 네비게이션, 지도 제어)
   - UX 개선 (네비게이션 흐름 수정)
 - ✅ Figma MCP 연동
+- ✅ **Figma 화면 구성 디자인 완료** (채널: ra1r3dhi)
+  - MapScreen (지도 메인 화면)
+  - CourseGenerationScreen (코스 생성 화면)
+  - CourseListScreen (코스 목록 화면)
+  - RunningScreen (러닝 추적 화면)
+- ✅ **Figma 디자인 코드 적용 완료**
+  - 모든 화면의 레이아웃, 색상, 크기를 Figma 디자인에 맞게 코드에 반영
+  - Theme 색상 추가 (surfaceLight, mapBackground, borderGray)
+  - Button, Card 컴포넌트 스타일 수정
 - ✅ TypeScript 오류 수정 완료
 - ✅ Android 빌드 성공 (compileSdkVersion 34)
 - ⚠️ 앱 로드 문제: Metro Bundler 연결 문제로 인해 앱이 JavaScript 번들을 로드하지 못함
@@ -389,12 +404,67 @@ npm test
 
 ### 다음 단계
 
-1. **프론트엔드 앱 로드 문제 해결** (우선순위 높음)
-   - Metro Bundler 연결 문제 해결
-   - Expo Dev Client 방식으로 앱 정상 실행 확인
-2. 코스 생성 알고리즘 구현 (DistanceConstrainedLoopGenerator)
-3. 러닝 추적 기능 구현 (GPS 추적, 실시간 통계)
-4. RunningScreen 완전 연동
+#### 우선순위 1: 프론트엔드 앱 로드 문제 해결 (즉시 필요)
+1. **Metro Bundler 연결 문제 해결**
+   - **결정**: Android Studio + Expo Dev Client 유지 (네이티브 모듈 필수)
+   - **해결 방법**:
+     - 캐시 클리어: `expo start -c --dev-client`
+     - 네트워크 설정 확인: 방화벽 포트 8081 허용
+     - 포트 포워딩: `adb reverse tcp:8081 tcp:8081`
+     - WebSocket 연결 테스트
+   - **목표**: 앱이 정상적으로 JavaScript 번들을 로드하고 실행됨
+
+#### 우선순위 2: 앱 기능 테스트 (앱 로드 후)
+2. **UI/UX 검증**
+   - Figma 디자인 적용 확인 (레이아웃, 색상, 크기)
+   - 네비게이션 흐름 검증
+   - 로딩 상태 표시 확인
+   - 에러 처리 확인
+3. **API 통합 테스트**
+   - 코스 목록 조회 테스트 (샘플 데이터 9개 확인)
+   - 코스 생성 테스트 (MockLoopGenerator 검증)
+   - 코스 상세 정보 표시 확인
+   - Running API 통합 테스트 (시작, 위치 업데이트, 종료)
+
+#### 우선순위 3: 러닝 추적 기능 구현
+4. **GPS 위치 추적 구현** (프론트엔드)
+   - 위치 권한 요청
+   - GPS 위치 추적 시작/중지
+   - 주기적 위치 업데이트 (예: 5초마다)
+   - 위치 정확도 필터링
+5. **실시간 통계 계산** (프론트엔드)
+   - 거리 계산 (Haversine 공식)
+   - 시간 계산
+   - 페이스 계산 (분/km)
+   - 속도 계산 (km/h)
+   - 고저차 계산 (가속도계/기압계 활용)
+6. **RunningScreen 완전 연동**
+   - GPS 추적과 UI 연동
+   - 실시간 통계 표시
+   - 러닝 경로 지도 표시
+   - 백엔드 동기화 (이미 구현됨)
+
+#### 우선순위 4: 코스 관리 기능 완성
+7. **코스 목록 화면 API 연동**
+   - 코스 목록 조회 API 호출
+   - 코스 카드 클릭 시 상세 정보 표시
+   - 코스 삭제 기능
+8. **코스 검색 기능**
+   - 실시간 검색 필터링 (이미 구현됨)
+   - 검색 결과 표시
+9. **코스 저장 기능**
+   - 생성된 코스 저장 API 호출
+   - 저장 성공/실패 처리
+
+#### 우선순위 5: 코스 생성 알고리즘 구현 (백엔드)
+10. **DistanceConstrainedLoopGenerator 구현**
+    - Step 기반 원둘레 분할
+    - 양방향 Adaptive Step 피드백
+    - S-P 기반 Fallback
+    - 도로 스냅핑 로직
+    - 루프 폐쇄 검증
+    - 자가 교차 검증
+    - 알고리즘 단위 테스트 작성
 
 자세한 진행 상황은 `DEVELOPMENT_CHECKLIST.md` 참고.
 

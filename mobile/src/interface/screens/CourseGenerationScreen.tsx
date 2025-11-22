@@ -101,13 +101,15 @@ export const CourseGenerationScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <CustomMapView
-        initialLocation={currentLocation}
-        coursePolyline={generatedCourse?.polyline}
-        currentLocation={currentLocation}
-        courseDistance={generatedCourse?.distance.kilometers}
-        style={styles.map}
-      />
+      <View style={styles.mapContainer}>
+        <CustomMapView
+          initialLocation={currentLocation}
+          coursePolyline={generatedCourse?.polyline}
+          currentLocation={currentLocation}
+          courseDistance={generatedCourse?.distance.kilometers}
+          style={styles.map}
+        />
+      </View>
       <View style={styles.inputContainer}>
         <ScrollView>
           {generatedCourse && generationMetadata ? (
@@ -197,13 +199,19 @@ const createStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    map: {
+    mapContainer: {
       flex: 0.6,
+      marginTop: 10, // Figma 디자인: 상단 여백 10px
+      marginHorizontal: 10, // Figma 디자인: 좌우 여백 10px
+      backgroundColor: theme.colors.mapBackground, // Figma 디자인: #d9d9d9
+    },
+    map: {
+      flex: 1,
     },
     inputContainer: {
       flex: 0.4,
-      backgroundColor: theme.colors.surface,
-      padding: theme.spacing.md,
+      backgroundColor: theme.colors.surfaceLight, // Figma 디자인: #fafafa
+      padding: theme.spacing.md, // Figma 디자인: 16px 패딩
     },
     presetContainer: {
       flexDirection: 'row',

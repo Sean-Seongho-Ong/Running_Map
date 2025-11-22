@@ -411,12 +411,13 @@ logger.info("course_generation_started",
 
 #### Interface 계층 구현 (API) ✅
 - ✅ **API 엔드포인트 구현 완료**:
-  - **Course API**: 생성, 조회, 목록, 수정, 삭제
+  - **Course API**: 생성, 조회, 목록, 저장, 삭제
   - **Running API**: 시작, 위치 업데이트, 상태 업데이트, 종료
-- ✅ **Pydantic 스키마**: 요청/응답 모델 정의 완료
+- ✅ **Pydantic 스키마**: 요청/응답 모델 정의 완료 (DTO 재사용)
 - ✅ **의존성 주입**: `Depends`를 활용한 Clean Architecture 의존성 주입 구현
 - ✅ **에러 핸들링**: 글로벌 예외 처리기 및 커스텀 예외 매핑
 - ✅ **API 테스트**: Interface 테스트 11개 전수 통과 (Course 7개, Running 4개)
+- ✅ **프론트엔드 연동**: API 응답 형식 검증 완료, 프론트엔드 Repository 수정 완료
 
 ### 다음 단계
 
@@ -427,8 +428,14 @@ logger.info("course_generation_started",
    - 양방향 Adaptive Step 피드백 (v0.3)
 
 2. **프론트엔드 연동** (진행 중)
-   - API 연동 완료
-   - UI Integration 부분 완료 (CourseGenerationScreen, MapScreen)
+   - ✅ API 연동 완료 (백엔드 응답 형식 검증 완료)
+   - ✅ UI Integration 부분 완료 (CourseGenerationScreen, MapScreen)
+   - ✅ 프론트엔드 API 코드 수정 완료 (RunningRepository)
+
+**최근 업데이트 (2025-11-22)**:
+- ✅ 프론트엔드 Figma 디자인 코드 적용 완료
+- ✅ 프론트엔드 API 코드 검토 완료
+- ✅ 백엔드-프론트엔드 API 호환성 확인 완료
 
 자세한 내용은 `plan/SDS_Running_App.md` 및 `DEVELOPMENT_CHECKLIST.md` 참고.
 

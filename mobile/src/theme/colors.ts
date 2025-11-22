@@ -19,6 +19,8 @@ export const colors = {
   backgroundSecondary: '#F5F5F5',
   surface: '#FFFFFF',
   surfaceElevated: '#FAFAFA',
+  surfaceLight: '#FAFAFA',        // Figma 디자인: Input Container 배경
+  mapBackground: '#D9D9D9',      // Figma 디자인: 지도 영역 배경
   
   // Text Colors
   text: '#212121',
@@ -29,6 +31,7 @@ export const colors = {
   // Border Colors
   border: '#E0E0E0',
   borderLight: '#F5F5F5',
+  borderGray: '#E0E0E0',         // Figma 디자인: outline 버튼 테두리 (RGB: 0.88, 0.88, 0.88)
   
   // Status Colors
   success: '#4CAF50',

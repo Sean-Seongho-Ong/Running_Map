@@ -43,14 +43,16 @@ export const MapScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <CustomMapView
-        initialLocation={currentLocation}
-        coursePolyline={generatedCourse?.polyline}
-        currentLocation={currentLocation}
-        courseDistance={generatedCourse?.distance.kilometers}
-        showLocationButton={true}
-        style={styles.map}
-      />
+      <View style={styles.mapContainer}>
+        <CustomMapView
+          initialLocation={currentLocation}
+          coursePolyline={generatedCourse?.polyline}
+          currentLocation={currentLocation}
+          courseDistance={generatedCourse?.distance.kilometers}
+          showLocationButton={true}
+          style={styles.map}
+        />
+      </View>
       <View style={styles.buttonContainer}>
         <Button
           title="코스 생성"
@@ -77,16 +79,23 @@ const createStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
     },
+    mapContainer: {
+      flex: 1,
+      marginTop: 10, // Figma 디자인: 상단 여백 10px
+      marginHorizontal: 10, // Figma 디자인: 좌우 여백 10px
+      backgroundColor: theme.colors.mapBackground, // Figma 디자인: #d9d9d9
+      borderRadius: 0, // 필요시 조정
+    },
     map: {
       flex: 1,
     },
     buttonContainer: {
-      padding: theme.spacing.md,
-      backgroundColor: theme.colors.surface,
-      gap: theme.spacing.sm,
+      padding: theme.spacing.md, // Figma 디자인: 16px 패딩
+      backgroundColor: theme.colors.surface, // Figma 디자인: 흰색
+      gap: theme.spacing.sm, // 버튼 간격
     },
     button: {
-      marginBottom: theme.spacing.xs,
+      marginBottom: 0, // gap으로 간격 관리
     },
   });
 

@@ -47,8 +47,10 @@ const createStyles = (theme: Theme, elevated: boolean) =>
   StyleSheet.create({
     card: {
       backgroundColor: theme.colors.surface,
-      borderRadius: 12,
+      borderRadius: 8, // Figma 디자인: 8px 모서리
       padding: theme.spacing.md,
+      borderWidth: elevated ? 0 : 1, // elevated가 아닐 때 테두리 추가
+      borderColor: theme.colors.border, // Figma 디자인: 회색 테두리
       ...(elevated && {
         shadowColor: '#000',
         shadowOffset: {

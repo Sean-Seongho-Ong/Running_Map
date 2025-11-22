@@ -93,6 +93,7 @@ export interface RunningLocationUpdateRequest {
         altitude?: number;
         timestamp: string;
     };
+    timestamp: string;
 }
 
 export interface RunningFinishRequest {
@@ -100,7 +101,11 @@ export interface RunningFinishRequest {
         latitude: number;
         longitude: number;
     };
-    route: { lat: number; lon: number; timestamp: string }[];
+}
+
+export interface RunningSessionStartResponse {
+    session_id: string;
+    started_at: string;
 }
 
 export interface RunningSessionResponse {
