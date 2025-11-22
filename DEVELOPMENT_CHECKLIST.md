@@ -56,6 +56,50 @@ Running Map App 개발 진행 상황을 관리하는 체크리스트입니다.
   - Location Update 요청 형식 수정 (timestamp 필드 추가)
   - Finish Running 요청 형식 수정 (route 필드 제거)
 
+### MVP 개발 - expo-dev-client 제거 및 일반 빌드로 전환
+
+#### 우선순위 0: expo-dev-client 제거 및 일반 빌드로 전환
+
+**목표**: Gradle 빌드 오류 해결 및 안정적인 빌드 환경 구축
+
+1. **expo-dev-client 패키지 제거**
+   - [ ] package.json에서 expo-dev-client 제거
+   - [ ] npm uninstall expo-dev-client 실행
+   - [ ] node_modules에서 expo 관련 패키지 정리
+
+2. **네이티브 코드 수정**
+   - [ ] MainActivity.java에서 Dev Client 초기화 코드 제거
+   - [ ] MainApplication.java에서 Dev Client 관련 코드 제거
+   - [ ] 네이티브 코드가 일반 React Native 빌드로 작동하는지 확인
+
+3. **Gradle 설정 정리**
+   - [ ] build.gradle에서 expo-dev-launcher 플러그인 제거
+   - [ ] settings.gradle에서 expo-dev-launcher 관련 설정 제거
+   - [ ] Gradle 캐시 정리
+
+4. **package.json 스크립트 수정**
+   - [ ] "start" 스크립트에서 --dev-client 플래그 제거
+   - [ ] "android" 스크립트에서 --dev-client 플래그 제거
+   - [ ] "ios" 스크립트에서 --dev-client 플래그 제거
+
+5. **빌드 및 테스트**
+   - [ ] Gradle Sync 성공 확인
+   - [ ] Clean Project 성공 확인
+   - [ ] Rebuild Project 성공 확인
+   - [ ] 앱 빌드 및 실행 성공 확인
+   - [ ] 지도 기능 정상 작동 확인
+   - [ ] 위치 추적 기능 정상 작동 확인
+
+6. **기능 검증**
+   - [ ] 모든 화면 정상 표시 확인
+   - [ ] API 통합 정상 작동 확인
+   - [ ] 네비게이션 정상 작동 확인
+
+**참고**: 
+- expo-dev-client 제거 시 네이티브 모듈(`react-native-maps`, `@react-native-community/geolocation`)은 일반 React Native 빌드로 정상 작동
+- Expo SDK 패키지(`expo-status-bar`, `expo-splash-screen`)는 Bare Workflow에서도 작동
+- Fast Refresh는 일반 React Native 빌드에서도 작동
+
 ### 남은 주요 작업
 
 #### 우선순위 1: 프론트엔드 앱 로드 문제 해결 (즉시 필요)
