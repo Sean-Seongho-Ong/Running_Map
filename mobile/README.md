@@ -328,6 +328,245 @@ export const API_BASE_URL = __DEV__
    expo start -c
    ```
 
+### Android 에뮬레이터 시작
+
+#### 방법 1: Android Studio에서 직접 시작 (권장)
+
+1. **Android Studio 열기**
+   - 프로젝트 열기: `C:\Running_map\mobile\android` 폴더
+
+2. **에뮬레이터 시작**
+   - **Tools** → **Device Manager** 클릭
+   - 에뮬레이터가 있으면 ▶️ (Play) 버튼 클릭
+   - 없으면 **Create Device** 버튼 클릭하여 생성
+
+3. **에뮬레이터 생성 (필요시)**
+   - **Phone** 카테고리 선택
+   - 추천 기기 선택 (예: Pixel 5, Pixel 6)
+   - 시스템 이미지 선택 (API Level 33 이상 권장)
+   - **Finish** 클릭
+
+4. **확인**
+   ```powershell
+   adb devices
+   ```
+   `device`가 표시되면 정상입니다.
+
+#### 문제 해결
+
+- **에뮬레이터가 시작되지 않음**: BIOS에서 가상화 기능 활성화 확인
+- **에뮬레이터가 느림**: Graphics를 **Hardware - GLES 2.0**으로 설정
+
+### Android Studio Terminal에서 ADB 사용
+
+Android Studio 터미널에서 `adb` 명령어가 인식되지 않는 경우:
+
+#### 빠른 해결책
+
+```powershell
+# 1. ADB 경로 찾기
+cd mobile
+.\scripts\find_adb.ps1
+
+# 2. 출력된 경로를 사용하여 PATH에 추가 (예시)
+$env:Path += ";C:\Users\User\AppData\Local\Android\Sdk\platform-tools"
+
+# 3. 확인
+adb devices
+
+# 4. 포트 포워딩 설정
+adb reverse tcp:8081 tcp:8081
+```
+
+#### 영구적으로 PATH에 추가
+
+1. Windows 검색: "환경 변수"
+2. "시스템 환경 변수 편집" 선택
+3. "환경 변수" → "시스템 변수" → `Path` 편집
+4. 다음 경로 추가:
+   ```
+   C:\Users\User\AppData\Local\Android\Sdk\platform-tools
+   ```
+5. 새 터미널 창 열기
+
+#### 자동화 스크립트 사용
+
+```powershell
+cd mobile
+.\scripts\setup_metro_connection.ps1
+```
+
+### Metro Bundler 연결 설정
+
+Android Studio에서 앱을 실행하기 전에 Metro Bundler와의 연결을 설정합니다.
+
+#### 빠른 시작
+
+1. **포트 포워딩 설정**
+   ```powershell
+   cd mobile
+   .\scripts\setup_metro_connection.ps1
+   ```
+
+2. **Metro Bundler 시작 (캐시 클리어)**
+   ```powershell
+   cd mobile
+   .\scripts\start_metro_clean.ps1
+   ```
+
+3. **Android Studio에서 앱 실행**
+   - Android Studio에서 앱 빌드 및 실행
+   - Expo Dev Client 화면에서 서버 선택
+
+#### 수동 설정
+
+1. **포트 포워딩**
+   ```bash
+   adb reverse tcp:8081 tcp:8081
+   adb reverse --list  # 확인
+   ```
+
+2. **Metro Bundler 시작**
+   ```bash
+   cd mobile
+   npm start
+   # 또는
+   expo start --dev-client --clear
+   ```
+
+3. **확인 사항**
+   - Metro Bundler: `Metro waiting on exp://192.168.x.x:8081` 메시지 확인
+   - 포트 포워딩: `adb reverse --list`에서 `8081 tcp:8081` 확인
+
+#### 문제 해결
+
+- **포트 8081이 이미 사용 중**: `netstat -ano | findstr :8081`로 프로세스 확인 후 종료
+- **WebSocket 연결 오류**: 캐시 클리어 후 재시작, 방화벽 포트 8081 허용
+- **앱이 번들을 로드하지 못함**: Android Studio에서 Clean & Rebuild, 앱 재시작
+
+### Expo Dev Client 연결 오류
+
+#### 오류 메시지
+```
+DevLauncher E Unable to inject debug server host settings.
+java.lang.NoSuchFieldException: No field mPackagerConnectionSettings
+```
+
+#### 해결 방법
+
+**방법 1: Clean & Rebuild (권장)**
+1. Android Studio: **Build** → **Clean Project**
+2. **Build** → **Rebuild Project**
+3. 앱 재실행
+
+**방법 2: Expo Dev Client 재설치**
+```powershell
+cd mobile
+npx expo install expo-dev-client
+cd android
+.\gradlew clean
+cd ..
+npx expo run:android
+```
+
+**방법 3: 완전한 재설정**
+```powershell
+cd mobile
+Remove-Item -Recurse -Force node_modules\.cache, .expo, .metro, android\app\build, android\.gradle -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force node_modules
+npm install
+```
+Android Studio에서 **Build** → **Clean Project** → **Rebuild Project**
+
+### Gradle 캐시 오류
+
+#### 오류 메시지
+```
+Unable to load class 'org.gradle.api.artifacts.SelfResolvingDependency'
+Gradle's dependency cache may be corrupt
+```
+
+#### 해결 방법
+
+**방법 1: Gradle 캐시 삭제 (권장)**
+```powershell
+cd mobile\android
+.\gradlew --stop
+Remove-Item -Recurse -Force .gradle, app\build, build -ErrorAction SilentlyContinue
+```
+Android Studio에서 **File** → **Sync Project with Gradle Files**
+
+**방법 2: 사용자 Gradle 캐시 삭제**
+```powershell
+Remove-Item -Recurse -Force $env:USERPROFILE\.gradle\caches -ErrorAction SilentlyContinue
+```
+
+**방법 3: 완전한 재설정**
+1. Android Studio 완전히 종료
+2. 모든 Gradle 관련 파일 삭제 (위 명령 실행)
+3. Android Studio 재시작
+4. **File** → **Invalidate Caches...** → **Invalidate and Restart**
+
+#### 빠른 해결 스크립트
+```powershell
+cd mobile\android
+.\gradlew --stop
+Remove-Item -Recurse -Force .gradle, app\build, build -ErrorAction SilentlyContinue
+Write-Host "Done! Now sync the project in Android Studio." -ForegroundColor Green
+```
+
+### 버전 정보
+
+#### 현재 버전 설정
+- **Gradle**: 7.5.1
+- **Android Gradle Plugin**: 7.4.2
+- **compileSdkVersion**: 33
+- **targetSdkVersion**: 33
+- **buildToolsVersion**: 33.0.0
+- **Kotlin**: 1.8.22
+- **minSdkVersion**: 21
+
+#### 버전 업데이트 이력
+- Gradle: 7.6.3 → 7.5.1
+- compileSdkVersion: 34 → 33
+- buildToolsVersion: 34.0.0 → 33.0.0
+- Kotlin: 1.8.10 → 1.8.22
+
+### 빠른 시작 가이드
+
+#### 현재 상태 확인
+```powershell
+# 포트 포워딩 확인
+adb reverse --list
+# host-20 tcp:8081 tcp:8081 이 보여야 함
+```
+
+#### 다음 단계
+
+1. **Metro Bundler 시작**
+   ```powershell
+   cd C:\Running_map\mobile
+   npm start
+   ```
+   또는 캐시 클리어 후:
+   ```powershell
+   .\scripts\start_metro_clean.ps1
+   ```
+
+2. **Android Studio에서 앱 실행**
+   - Android Studio 열기
+   - 에뮬레이터 확인 (Device Manager)
+   - ▶️ (Run) 버튼 클릭
+
+3. **Expo Dev Client에서 서버 선택**
+   - 앱 시작 후 Expo Dev Client 화면에서 서버 선택
+   - JavaScript 번들 로드 확인
+
+#### 성공 확인
+- ✅ 첫 화면 (MapScreen) 표시
+- ✅ 개발자 메뉴 접근 가능 (`Ctrl + M`)
+- ✅ Metro Bundler 터미널에 번들 요청 로그 표시
+
 ## 현재 상태 (2025-11-22)
 
 ### 완료된 작업 ✅
@@ -362,6 +601,8 @@ export const API_BASE_URL = __DEV__
   - Metro Bundler는 정상 실행 중
   - WebSocket 연결 오류 발생
   - Expo Dev Client에서 서버 선택 후 로드되지 않음
+
+**해결 방법**: `mobile/METRO_BUNDLER_SETUP.md` 및 `mobile/ANDROID_EMULATOR_GUIDE.md` 참고
 
 ## 개발 전략: Android Studio vs Expo Go
 
